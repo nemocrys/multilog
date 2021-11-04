@@ -7,6 +7,8 @@
 The project is being processed by the model experiments group at the IKZ - Leibniz Institut für Kristallzüchtung.
 
 ---
+## <u>Programs:</u>
+Python 3 is used.
 
 Script	    		|	 Related Device  
 --------------------|------------------------
