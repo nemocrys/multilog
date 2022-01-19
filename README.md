@@ -1,9 +1,10 @@
 # multilog
 
+Masurement data recording and visualization using various devices. This is still under development.
+
 ## <u>About Us</u>
 The project is being processed by the model experiments group at the IKZ - Leibniz Institut für Kristallzüchtung.
 
----
 ## <u>Programs</u>
 Python 3 is used.
 
