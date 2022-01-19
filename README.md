@@ -21,7 +21,7 @@ __Other files__
 2. config.ini 
     * configuration file for the used devices
 
-## <u> Operation: </u>
+## <u> Operation </u>
 
 Start the main sample.py in a command window:
 python sample.py
@@ -35,8 +35,6 @@ If you use this code in your research please cite:
 A. Enders-Seidlitz, J. Pal, and K. Dadzis 2022 Model experiments for Czochralski crystal growth processes using inductive and resistive heating. *IOP Conf. Ser.* **EPM 2021** (in press)
 
 ## Acknowledgements
-
-Main parts of this code have been written by [Max Schröder](https://github.com/mfschroeder).
 
 [This project](https://www.researchgate.net/project/NEMOCRYS-Next-Generation-Multiphysical-Models-for-Crystal-Growth-Processes) has received funding from the European Research Council (ERC) under the European Union's Horizon 2020 research and innovation programme (grant agreement No 851768).
 
