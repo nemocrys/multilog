@@ -1,13 +1,10 @@
 # multilog
- ... still under construction ...
 
-# The present scripts coordinate the measurement instruments as described in the publication
-
-## <u>About Us:</u>
+## <u>About Us</u>
 The project is being processed by the model experiments group at the IKZ - Leibniz Institut für Kristallzüchtung.
 
 ---
-## <u>Programs:</u>
+## <u>Programs</u>
 Python 3 is used.
 
 Script	    		|	 Related Device  
@@ -17,7 +14,7 @@ Pyrometer_Array.py  |    Impac Series 600
 DAQ_6510.py         |    Multimeter 
 Arduino.py          |    Not yet fully implemented
 
-__Other files__:    
+__Other files__ 
 1. sample.py
     * The main script to start
 2. config.ini 
@@ -29,3 +26,17 @@ Start the main sample.py in a command window:
 python sample.py
 
 The flag --h shows some command line parameters
+
+## Referencing
+
+If you use this code in your research please cite:
+
+A. Enders-Seidlitz, J. Pal, and K. Dadzis 2022 Model experiments for Czochralski crystal growth processes using inductive and resistive heating. *IOP Conf. Ser.* **EPM 2021** (in press)
+
+## Acknowledgements
+
+Main parts of this code have been written by [Max Schröder](https://github.com/mfschroeder).
+
+[This project](https://www.researchgate.net/project/NEMOCRYS-Next-Generation-Multiphysical-Models-for-Crystal-Growth-Processes) has received funding from the European Research Council (ERC) under the European Union's Horizon 2020 research and innovation programme (grant agreement No 851768).
+
+<img src="https://raw.githubusercontent.com/nemocrys/pyelmer/master/EU-ERC.png">
