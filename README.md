@@ -3,7 +3,9 @@
 Masurement data recording and visualization using various devices. This is still under development.
 
 ## About Us
-The project is being processed by the model experiments group at the IKZ - Leibniz Institut für Kristallzüchtung.
+The project is being processed by the **Model experiments** group at the Leibniz Institute for Crystal Growth (IKZ).
+[Group on IKZ homepage](https://www.ikz-berlin.de/en/research/materials-science/section-fundamental-description)
+
 
 ## Programs
 Python 3 is used.
