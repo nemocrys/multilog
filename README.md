@@ -3,9 +3,13 @@
 Masurement data recording and visualization using various devices. This is still under development.
 
 ## About Us
-The project is being processed by the **Model experiments** group at the Leibniz Institute for Crystal Growth (IKZ).
+The project is being processed by the **Model experiments** group at the Leibniz Institute for Crystal Growth (IKZ):
+
 [Group on IKZ homepage](https://www.ikz-berlin.de/en/research/materials-science/section-fundamental-description)
 
+If you use this code in your research, please cite our article:
+
+A. Enders-Seidlitz, J. Pal, and K. Dadzis, Model experiments for Czochralski crystal growth processes using inductive and resistive heating. *IOP Conference Series: Materials Science and Engineering, Electromagnetic Processing of Materials (EPM 2021)*, 2022, In press.
 
 ## Programs
 Python 3 is used.
@@ -33,12 +37,6 @@ Start the main sample.py in a command window:
 python sample.py
 
 The flag --h shows some command line parameters
-
-## Referencing
-
-If you use this code in your research, please cite our article:
-
-A. Enders-Seidlitz, J. Pal, and K. Dadzis, Model experiments for Czochralski crystal growth processes using inductive and resistive heating. *IOP Conference Series: Materials Science and Engineering, Electromagnetic Processing of Materials (EPM 2021)*, 2022, In press.
 
 ## Acknowledgements
 
