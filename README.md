@@ -2,10 +2,10 @@
 
 Masurement data recording and visualization using various devices. This is still under development.
 
-## <u>About Us</u>
+## About Us
 The project is being processed by the model experiments group at the IKZ - Leibniz Institut für Kristallzüchtung.
 
-## <u>Programs</u>
+## Programs
 Python 3 is used.
 
 Script	    		|	 Related Device  
@@ -21,7 +21,11 @@ __Other files__
 2. config.ini 
     * configuration file for the used devices
 
-## <u> Operation </u>
+__Further modules to be integrated here__
+
+[IR Camera](https://github.com/nemocrys/IRCamera)
+
+## Operation
 
 Start the main sample.py in a command window:
 python sample.py
@@ -30,9 +34,9 @@ The flag --h shows some command line parameters
 
 ## Referencing
 
-If you use this code in your research please cite:
+If you use this code in your research, please cite our article:
 
-A. Enders-Seidlitz, J. Pal, and K. Dadzis 2022 Model experiments for Czochralski crystal growth processes using inductive and resistive heating. *IOP Conf. Ser.* **EPM 2021** (in press)
+A. Enders-Seidlitz, J. Pal, and K. Dadzis, Model experiments for Czochralski crystal growth processes using inductive and resistive heating. *IOP Conference Series: Materials Science and Engineering, Electromagnetic Processing of Materials (EPM 2021)*, 2022, In press.
 
 ## Acknowledgements
 
