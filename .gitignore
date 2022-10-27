@@ -7,3 +7,5 @@
 log.txt
 20112117.xml
 config*.yml
+doc/_build
+doc/_static
