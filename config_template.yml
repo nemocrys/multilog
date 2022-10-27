@@ -1,0 +1,274 @@
+settings:
+  dt-main: 2000  # sampling time step [ms]
+  dt-camera: 5000  # sampling time step [ms]
+  dt-camera-update: 50  # frame update time step [ms]
+  dt-init: 1000  # sampling time step before recording is started [ms]
+
+logging:
+  level: 30  # 10: debug, 20: info, 30: warning, 40: error
+  filename: multilog.log  # if not given, logs are printed in console
+  format: '%(asctime)s %(levelname)s %(name)s - %(message)s'
+  filemode: a  # w: overwrite old logfile, a: append to existing logfile
+  # encoding: 'utf-8'  # only available for python >= 3.9
+devices:
+  DAQ-6510:
+    serial-interface:
+      port: /dev/ttyr00
+      baudrate: 115200
+      bytesize: 8
+      stopbits: 1
+      parity: N
+      timeout: 2.0
+    settings:
+      nplc: 0.5
+      lsync: True  # line sync for all channels
+      ocom: True  # offset compensation for all channels
+      azer: False  # automatic zeroing for all channels
+      adel: True  # automatic delay for all channels
+      internal-cold-junction: False  # if False: use 0.0°C
+    channels:
+      # Sensor types: temperature, dcv, acv
+      # Sensor ID examples: TE_*_K, TE_*_J, Pt-100_*, Pt-1000_*,
+      101: # chanel number
+        type: temperature
+        sensor-id: TE_1_K
+        position: air 155 mm over crucible
+      102:
+        type: temperature
+        sensor-id: TE_2_K
+        position: crucible frontside
+      120:
+        type: temperature
+        sensor-id: TE_2_J
+        position: outside furnace
+      201:
+        type: dcv
+        tab-name: Current
+        range: 10  # V (optional)
+        sensor-id: rogowski_300A
+        factor: 100 # Ampere / Volt
+        unit: A
+      # 206:
+      #   type: temperature
+      #   sensor-id: Pt-100_1
+      #   position: crucible backside
+      # 207:
+      #   type: temperature
+      #   sensor-id: Pt-100_2
+      #   position: crucible rightside
+      # 210:
+      #   type: dcv
+      #   tab-name: Heatflux
+      #   sensor-id: heatflux-1
+      #   range: 100e-3  # V (optional)
+      #   factor: 1  # TODO
+      #   unit: W/m^2
+      #   position: bottom
+      # 211:
+      #   type: dcv
+      #   tab-name: Heatflux
+      #   sensor-id: heatflux-2
+      #   range: 100e-3  # V (optional)
+      #   factor: 1  # TODO
+      #   unit: W/m^2
+      #   position: left
+      # 212:
+      #   type: dcv
+      #   sensor-id: heater-voltage
+      #   range: 1  # V (optional)
+      #   factor: 1  # TODO
+  IFM-flowmeter:
+    IP: 172.18.56.199
+    ports:
+      1:
+        name: RL_Schwingkreis
+        type: SV-4200
+      2:
+        name: RL_Welle
+        type: SV-4200
+      3:
+        name: RL_Rezipient
+        type: SV-4200
+      4:
+        name: RL_Generator
+        type: SV-4200
+      5:
+        name: RL_Spule_1
+        type: SV-4200
+      6:
+        name: RL_Spule_2
+        type: SBG-233
+      7:
+        name: VL_gesamt
+        type: SM-8020
+    flow-balance:
+      inflow:
+        - VL_gesamt
+      outflow:
+        - RL_Schwingkreis
+        - RL_Welle
+        - RL_Rezipient
+        - RL_Generator
+        - RL_Spule_1
+      tolerance: 2.5  # l/min
+  Eurotherm:
+   serial-interface:
+     port: /dev/ttyr04
+     baudrate: 9600
+     bytesize: 7
+     stopbits: 1
+     parity: E
+     timeout: 0.1
+  IGA-6-23-adv:  # Pyrometer
+    serial-interface:
+      port: /dev/ttyr02
+      baudrate: 115200
+      bytesize: 8
+      stopbits: 1
+      parity: E
+      timeout: 0.1
+    device-id: '00'  # RS485 device ID
+    emissivity: 1.0  # 0.0 < emissivity <= 1.0
+    transmissivity: 1.0  # 0.0 < transmissivity <= 1.0
+    t90: 0.01  # s, has to be a value out of t90-dict (below)
+    t90-dict:  # according to manual, don't modify that
+      0.001: 1
+      0.003: 2
+      0.005: 3
+      0.01: 4
+      0.05: 5
+      0.25: 6
+      1.0: 7
+      3.0: 8
+      10.0: 9
+  IGA-6-23-vis:  # Pyrometer
+    serial-interface:
+      port: /dev/ttyUSB1
+      baudrate: 115200
+      bytesize: 8
+      stopbits: 1
+      parity: E
+      timeout: 0.1
+    device-id: '01'  # RS485 device ID
+    emissivity: 1.0  # 0.0 < emissivity <= 1.0
+    transmissivity: 1.0  # 0.0 < transmissivity <= 1.0
+    t90: 0.01  # s, has to be a value out of t90-dict (below)
+    t90-dict:  # according to manual, don't modify that
+      0.001: 1
+      0.003: 2
+      0.005: 3
+      0.01: 4
+      0.05: 5
+      0.25: 6
+      1.0: 7
+      3.0: 8
+      10.0: 9
+  IGAR-6-adv:  # Ratio pyrometer
+    serial-interface:
+      port: /dev/ttyUSB0
+      baudrate: 115200
+      bytesize: 8
+      stopbits: 1
+      parity: E
+      timeout: 0.1
+    device-id: '00'
+    emissivity: 1.0  # 0.0 < emissivity <= 1.0
+    transmissivity: 1.0  # 0.0 < transmissivity <= 1.0
+    t90: 0.01  # s, has to be a value out of t90-dict (below)
+    t90-dict:  # according to manual, don't modify that
+      0.01: 1
+      0.05: 2
+      0.25: 3
+      1.0: 4
+      3.0: 5
+      10.0: 6
+  # Series-600:  # Pyrometer array  # WARNING: Not tested
+  #   serial-interface:
+  #     port: /dev/ttyrXX
+  #     baudrate: 115200
+  #     bytesize: 8
+  #     stopbits: 1
+  #     parity: E
+  #     timeout: 0.1
+  #   device-id: '00'  # RS485 device ID
+  #   sensors:
+  #     Pyro_h1:
+  #       head-number: 1
+  #       emissivity: 1.0  # 0.0 < emissivity <= 1.0
+  #       t90: 0.18  # s, has to be a value out of t90-dict (below)
+  #     Pyro_h2:
+  #       head-number: 2
+  #       emissivity: 1.0  # 0.0 < emissivity <= 1.0
+  #       t90: 0.18  # s, has to be a value out of t90-dict (below)
+  #   t90-dict:  # according to manual, don't modify that
+  #     0.18: 1
+  #     0.5: 2
+  #     1.0: 3
+  #     2.0: 4
+  #     5.0: 5
+  #     10.0: 6
+  #     30.0: 7
+  Basler:
+    device-number: 0
+    exposure-time: 10.e+3  # µs
+    frame-rate: 32  # device-specific, used for configuration of camera only
+    timeout: 1000  # ms
+  Optris-IP-640:
+    serial-number: 20112117
+    measurement-range: [0, 250]  # [-20, 100], [0, 250], [150 900]
+    framerate: 32
+    extended-T-range: 0  # 0: off, 1: on  CAUTION - temperatures ot of range may be invalid!
+    emissivity: 0.95
+    transmissivity: 1.0
+    T-ambient: -1000  # Ambient temperature, setting invalid values (below -273,15 degrees) forces the library to take its own measurement values.  # TODO what does that mean?
+  Process-Condition-Logger:
+    v_pull:
+      unit: mm/min
+      label: pulling velocity
+      default: 0
+    T_ctrl:
+      unit: °C
+      label: control temperature
+      default: 0
+    OP:
+      label: control operating point
+      default: 0
+    pos_top:
+      label: top axis position
+      default: 0
+    rot_crystal:
+      unit: rpm
+      label: crystal rotation
+      default: 0
+    rot_crucible:
+      unit: rpm
+      label: crucible rotation
+      default: 0
+    pressure:
+      unit: bar
+      label: furnace pressure
+      default: 1
+    door:
+      label: furnace door
+      values:
+        - open
+        - closed
+      default: open
+    gas:
+      label: gas atmosphere
+      values:
+        - air
+        - argon
+        - nitrogen
+        - vacuum
+      default: air
+    tag:
+      label: process status tag
+      values:
+        - heating up
+        - seeding
+        - growing
+        - cooling down
+      default: heating up
+    comment:
+      default: "Multilog measurement"
