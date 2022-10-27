@@ -1,2 +1,9 @@
-*.wpr
 *.pyc
+*.dat
+.vscode/
+*.wpr
+/measdata_*
+*.log
+log.txt
+20112117.xml
+config*.yml

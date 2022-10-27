@@ -1,43 +1,176 @@
 # multilog
+[![DOI](https://zenodo.org/badge/419782987.svg)](https://zenodo.org/badge/latestdoi/419782987)
 
-Masurement data recording and visualization using various devices.
+Measurement data recording and visualization using various devices, e.g., multimeters, pyrometers, optical or infrared cameras.
 
-The project is developed and maintained by the [**Model experiments group**](https://www.ikz-berlin.de/en/research/materials-science/section-fundamental-description#c486) at the Leibniz Institute for Crystal Growth (IKZ).
+![multilog 2](./multilog.png)
+
+The project is developed and maintained by the [**Model experiments group**](https://www.ikz-berlin.de/en/research/materials-science/section-fundamental-description#c486) at the Leibniz-Institute for Crystal Growth (IKZ).
 
 ### Referencing
-If you use this code in your research, please cite our article (available with open access):
+
+If you use this code in your research, please cite our open-access article:
 
 > A. Enders-Seidlitz, J. Pal, and K. Dadzis, Model experiments for Czochralski crystal growth processes using inductive and resistive heating *IOP Conference Series: Materials Science and Engineering*, 1223 (2022) 012003. https://doi.org/10.1088/1757-899X/1223/1/012003.
 
-## Programs
-Python 3 is used.
+## Supported devices
 
-Script	    		|	 Related Device  
---------------------|------------------------
-Pyrometer.py        |    Impac IGA 6/23 and IGAR 6 Adv.
-Pyrometer_Array.py  |    Impac Series 600  
-DAQ_6510.py         |    Multimeter 
-Arduino.py          |    Not yet fully implemented
+Currently, the following devices are supported:
 
-__Other files__ 
-1. sample.py
-    * The main script to start
-2. config.ini 
-    * configuration file for the used devices
+- Keithley DAQ6510 multimeter (RS232)
+- Lumasense pyrometers (RS485):
+  - IGA-6-23
+  - IGAR-6
+  - Series-600
+- Basler optical cameras (Ethernet)
+- Optris IP-640 IR camera (USB)
+- Eurotherm controller (RS232)
+- IFM flowmeter (Ethernet)
 
-__Further modules to be integrated here__
+Additional devices may be included in a flexible manner.
 
-[IR Camera](https://github.com/nemocrys/IRCamera)
+## Usage
 
-## Operation
+multilog is configured using the file *config.yml* in the main directory. A template [*config_template.yml*](./config_template.yml), including all supported measurement devices, is provided in this repository; please create a copy of this file and adjust it to your needs. Further details are given below.
 
-Start the main sample.py in a command window:
-python sample.py
+To run multilog execute the python file [*multilog.py*](./multilog.py):
 
-The flag --h shows some command line parameters
+```shell
+python3 ./multilog.py
+```
+
+If everything is configured correctly, the GUI window opens up. Sampling is started immediately for verification purposes, but the measurements are not recorded yet. Once the *Start* button is clicked, the directory "measdata_*date*_#*XX*" is created and samplings are saved to this directory in csv format. A separate file (or folder for images) is created for each measurement device.
+
+multilog is built for continuous sampling. In case of problems, check the log file for errors and warnings!
+
+## Configuration
+
+multilog is configured using the file *config.yml* in the main directory. A template [*config_template.yml*](./config_template.yml) including all supported measurement devices is provided in this repository; please create a copy of this file and adjust it to your needs.
+
+### Main settings
+
+In the *settings* section of the config-file the sampling time steps are defined (in ms):
+
+- dt-main: main time step for sampling once the recording is started. Used for all devices except cameras.
+- dt-camera: time step for sampling of cameras.
+- dt-camera-update: time step for updating camera view. This value should be lower than dt-camera (to get a smooth view) but not lower than exposure + processing time.
+- dt-init: time step used for sampling before recording is started.
+
+### Logging
+
+The logging is configured in the *logging* section of the config-file. The parameters defined are passed directly to the [basicConfig-function](https://docs.python.org/3/library/logging.html#logging.basicConfig) of Python's logging module.
+
+### Devices
+
+The *devices* section is the heart of multilog's configuration and contains the settings for the measurement devices. You can add any number of supported devices here. Just give them an individual name. A separate tab will be created in the GUI for each device. The device type is defined by the name as given in *config-template.yml*, e.g. "DAQ-6510", "IFM-flowmeter", or "Optris-IP-640", and must always be contained in this name; extensions are possible (e.g., "DAQ-6510 - temperatures").
+
+#### DAQ-6510 multimeter
+
+For the Keithley DAQ6510 multimeter, the following main settings are available:
+
+- serial-interface: configuration for [pyserial](https://pyserial.readthedocs.io/en/latest/pyserial_api.html#serial.Serial)
+- settings: currently, some channel-specific settings are defined globally. This will be changed in the future.
+- channels: flexible configuration of the device's channels for measurement of temperatures with thermocouples / Pt100 / Pt1000 and ac / dc voltages. Conversion of voltages into different units is possible (see "rogowski" in config_template.yml).
+
+#### IFM-flowmeter
+
+The main configurations (IP, ports) should be self-explaining. If the section "flow-balance" is included in the settings, in- and outflows are balanced to check for leakage. This is connected to a discord-bot for automatized notification; the bot configuration is hard-coded in [*discord_bot.py*](./multilog/discord_bot.py).
+
+#### Eurotherm controller
+
+Temperature measurement and control operation points are logged. Configuration of:
+
+- serial-interface: configuration for [pyserial](https://pyserial.readthedocs.io/en/latest/pyserial_api.html#serial.Serial)
+
+#### Lumasense IGA-6-23 / IGAR-6-adv / Series-600 pyrometer
+
+The configuration of the Lumasense pyrometers includes:
+
+- serial-interface: configuration for [pyserial](https://pyserial.readthedocs.io/en/latest/pyserial_api.html#serial.Serial)
+- device-id: RS485 device id (default: '00')
+- transmissivity
+- emissivity
+- t90
+
+#### Basler optical camera
+
+The camera is connected using ethernet. Configuration of:
+
+- device number (default: 0)
+- exposure time
+- framerate
+- timeout
+
+#### Optris-IP-640 IR camera
+
+Configuration according to settings in [FiloCara/pyOptris](https://github.com/FiloCara/pyOptris/blob/dev/setup.py), including:
+
+- measurement-range
+- framerate
+- emissivity
+- transmissivity
+
+## Program structure
+
+multilog follows the [Model-view-vontroller](https://de.wikipedia.org/wiki/Model_View_Controller) pattern. For each measurement device two classes are defined: a pyQT-QWidget "view" class for visualization in [*view.py*](./multilog/view.py) and a "model" class in [*devices.py*](./multilog/devices.py). The "controller", including program construction and main sampling loop, is defined in [*main.py*](./multilog/main.py).
+
+To add a new device, the following changes are required:
+
+- create a device-class implementing the device configuration, sampling, and saving in [*devices.py*](./multilog/devices.py)
+- create a widget-class implementing the GUI in [*view.py*](./multilog/view.py)
+- add the configuration in the *devices* section in [*config_template.yml*](./config_template.yml)
+- add the new device to the "setup devices & tabs" section (search for "# add new devices here!") in Controller.\_\_init\_\_(...) in [*main.py*](./multilog/main.py)
+
+## Dependencies
+
+multilog runs with python >= 3.7 on both Linux and Windows (Mac not tested). The main dependencies are the following python packages:
+
+- matplotlib
+- numpy
+- PyQT5
+- pyqtgraph
+- pyserial
+- PyYAML
+
+Depending on the applied devices multilog needs various additional python packages. A missing device-specific dependency leads to a warning. Always check the log if something is not working as expected!
+
+#### IFM-flowmeter
+
+- requests
+
+For the discord bot there are the following additional dependencies:
+
+- dotenv
+- discord
+
+#### Basler optical camera
+
+- pypylon
+- Pillow
+
+#### Optris-IP-640 IR camera
+
+- mpl_toolkits
+- pyoptris and dependencies installed according to https://github.com/nemocrys/pyOptris/blob/dev/README.md
+
+## NOMAD support
+
+NOMAD support and the option to uploade measurement data to [NOMAD](https://nomad-lab.eu/) is under implementation. Currently, various yaml-files containing a machine-readable description of the measurement data are generated.
+
+## License
+
+This code is available under a GPL v3 License. Parts are copied from [FiloCara/pyOptris](https://github.com/FiloCara/pyOptris/blob/dev/setup.py) and available under MIT License.
+
+## Support
+
+In case of questions please [open an issue](https://github.com/nemocrys/multilog/issues/new)!
 
 ## Acknowledgements
 
 [This project](https://www.researchgate.net/project/NEMOCRYS-Next-Generation-Multiphysical-Models-for-Crystal-Growth-Processes) has received funding from the European Research Council (ERC) under the European Union's Horizon 2020 research and innovation programme (grant agreement No 851768).
 
 <img src="https://raw.githubusercontent.com/nemocrys/pyelmer/master/EU-ERC.png">
+
+## Contribution
+
+Any help to improve this code is very welcome!
