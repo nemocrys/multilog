@@ -10,6 +10,6 @@ Measurement data recording and visualization using various devices, e.g., multim
    main
    devices
    view
-
+   configuration
 
 

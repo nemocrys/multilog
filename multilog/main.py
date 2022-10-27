@@ -108,17 +108,15 @@ class Controller(QObject):
         from .devices.pyrometer_array_lumasense import PyrometerArrayLumasense
         from .devices.pyrometer_lumasense import PyrometerLumasense
 
-        from .view.view import (
-            BaslerCameraWidget,
-            IfmFlowmeterWidget,
-            MainWindow,
-            Daq6510Widget,
-            EurothermWidget,
-            OptrisIP640Widget,
-            ProcessConditionLoggerWidget,
-            PyrometerLumasenseWidget,
-            PyrometerArrayLumasenseWidget,
-        )
+        from .view.main_window import MainWindow
+        from .view.daq6510 import Daq6510Widget
+        from .view.basler_camera import BaslerCameraWidget
+        from .view.ifm_flowmeter import IfmFlowmeterWidget
+        from .view.eurotherm import EurothermWidget
+        from .view.optris_ip640 import OptrisIP640Widget
+        from .view.process_condition_logger import ProcessConditionLoggerWidget
+        from .view.pyrometer_array_lumasense import PyrometerArrayLumasenseWidget
+        from .view.pyrometer_lumasense import PyrometerLumasenseWidget
 
         self.sampling_started = False  # this will to be true once "start" was clicked
 

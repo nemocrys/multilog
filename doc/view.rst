@@ -1,6 +1,14 @@
 view module
 ===========
 
+This module contains the main GUI window and a class for each device
+implementing respective the tab.
+
+Each device-widget must implement the following functions:
+
+- def set_initialization_data(self, sampling: Any) -> None
+- set_measurement_data(self, rel_time: list, meas_data: Any) -> None
+
 MainWindow
 ----------
 
@@ -10,19 +18,10 @@ MainWindow
    :show-inheritance:
 
 
-ImageWidget
-----------
+Base classes
+------------
 
-.. automodule:: multilog.view.image_widget
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-
-PlotWidget
-----------
-
-.. automodule:: multilog.view.plot_widget
+.. automodule:: multilog.view.base_classes
    :members:
    :undoc-members:
    :show-inheritance:
@@ -31,7 +30,7 @@ PlotWidget
 Daq6510Widget
 -------------
 
-.. automodule:: multilog.view.daq6510_widget
+.. automodule:: multilog.view.daq6510
    :members:
    :undoc-members:
    :show-inheritance:
@@ -40,7 +39,7 @@ Daq6510Widget
 IfmFlowmeterWidget
 ------------------
 
-.. automodule:: multilog.view.ifm_flowmeter_widget
+.. automodule:: multilog.view.ifm_flowmeter
    :members:
    :undoc-members:
    :show-inheritance:
@@ -49,7 +48,7 @@ IfmFlowmeterWidget
 EurothermWidget
 ---------------
 
-.. automodule:: multilog.view.eurotherm_widget
+.. automodule:: multilog.view.eurotherm
    :members:
    :undoc-members:
    :show-inheritance:
@@ -58,7 +57,7 @@ EurothermWidget
 OptrisIP640Widget
 -----------------
 
-.. automodule:: multilog.view.optris_ip640_widget
+.. automodule:: multilog.view.optris_ip640
    :members:
    :undoc-members:
    :show-inheritance:
@@ -68,7 +67,7 @@ OptrisIP640Widget
 PyrometerLumasenseWidget
 ------------------------
 
-.. automodule:: multilog.view.pyrometer_lumasense_widget
+.. automodule:: multilog.view.pyrometer_lumasense
    :members:
    :undoc-members:
    :show-inheritance:
@@ -78,7 +77,7 @@ PyrometerLumasenseWidget
 PyrometerArrayLumasenseWidget
 -----------------------------
 
-.. automodule:: multilog.view.pyrometer_array_lumasense_widget
+.. automodule:: multilog.view.pyrometer_array_lumasense
    :members:
    :undoc-members:
    :show-inheritance:
@@ -88,7 +87,7 @@ PyrometerArrayLumasenseWidget
 BaslerCameraWidget
 ------------------
 
-.. automodule:: multilog.view.basler_camera_widget
+.. automodule:: multilog.view.basler_camera
    :members:
    :undoc-members:
    :show-inheritance:
@@ -98,7 +97,7 @@ BaslerCameraWidget
 ProcessConditionLoggerWidget
 ----------------------------
 
-.. automodule:: multilog.view.process_condition_logger_widget
+.. automodule:: multilog.view.process_condition_logger
    :members:
    :undoc-members:
    :show-inheritance:
