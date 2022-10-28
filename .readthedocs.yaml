@@ -6,7 +6,7 @@ version: 2
 #     python: "3.8"
 
 python:
-  version: 3
+  version: 3.8
   install:
     - requirements: doc/requirements.txt
     - path: .

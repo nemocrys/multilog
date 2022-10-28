@@ -9,4 +9,3 @@ python-dotenv
 discord
 pypylon 
 Pillow
-mpl_toolkits

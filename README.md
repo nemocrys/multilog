@@ -123,7 +123,7 @@ To add a new device, the following changes are required:
 
 ## Dependencies
 
-multilog runs with python >= 3.7 on both Linux and Windows (Mac not tested). The main dependencies are the following python packages:
+multilog runs with python >= 3.8 on both Linux and Windows (Mac not tested). The main dependencies are the following python packages:
 
 - matplotlib
 - numpy
@@ -150,7 +150,6 @@ For the discord bot there are the following additional dependencies:
 
 #### Optris-IP-640 IR camera
 
-- mpl_toolkits
 - pyoptris and dependencies installed according to https://github.com/nemocrys/pyOptris/blob/dev/README.md
 
 ## NOMAD support
