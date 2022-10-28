@@ -5,7 +5,7 @@ pyqtgraph
 pyserial
 PyYAML
 requests
-dotenv
+python-dotenv
 discord
 pypylon 
 Pillow
