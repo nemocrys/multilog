@@ -1,0 +1,12 @@
+matplotlib
+numpy
+PyQt5
+pyqtgraph
+pyserial
+PyYAML
+requests
+dotenv
+discord
+pypylon 
+Pillow
+mpl_toolkits
