@@ -1,5 +1,6 @@
 # multilog
 [![DOI](https://zenodo.org/badge/419782987.svg)](https://zenodo.org/badge/latestdoi/419782987)
+[![Documentation Status](https://readthedocs.org/projects/multilog/badge/?version=latest)](https://multilog.readthedocs.io/en/latest/?badge=latest)
 
 Measurement data recording and visualization using various devices, e.g., multimeters, pyrometers, optical or infrared cameras.
 
@@ -110,17 +111,6 @@ Configuration according to settings in [FiloCara/pyOptris](https://github.com/Fi
 - emissivity
 - transmissivity
 
-## Program structure
-
-multilog follows the [Model-view-vontroller](https://de.wikipedia.org/wiki/Model_View_Controller) pattern. For each measurement device two classes are defined: a pyQT-QWidget "view" class for visualization in [*view.py*](./multilog/view.py) and a "model" class in [*devices.py*](./multilog/devices.py). The "controller", including program construction and main sampling loop, is defined in [*main.py*](./multilog/main.py).
-
-To add a new device, the following changes are required:
-
-- create a device-class implementing the device configuration, sampling, and saving in [*devices.py*](./multilog/devices.py)
-- create a widget-class implementing the GUI in [*view.py*](./multilog/view.py)
-- add the configuration in the *devices* section in [*config_template.yml*](./config_template.yml)
-- add the new device to the "setup devices & tabs" section (search for "# add new devices here!") in Controller.\_\_init\_\_(...) in [*main.py*](./multilog/main.py)
-
 ## Dependencies
 
 multilog runs with python >= 3.8 on both Linux and Windows (Mac not tested). The main dependencies are the following python packages:
@@ -155,6 +145,10 @@ For the discord bot there are the following additional dependencies:
 ## NOMAD support
 
 NOMAD support and the option to uploade measurement data to [NOMAD](https://nomad-lab.eu/) is under implementation. Currently, various yaml-files containing a machine-readable description of the measurement data are generated.
+
+## Documentation
+
+To get an overview of the program have a look at [multilog's Read the Docs page](https://multilog.readthedocs.io/en/latest/). It includes a short description of how to implement a new device. In case of questions please open an issue!
 
 ## License
 
