@@ -3,7 +3,8 @@ devices module
 This module contains a class for each device implementing
 device configuration, communication and saving of measurement data.
 
-Each device must implement the following functions:
+To be compatible with the sampling loop of multilog each device must
+implement the following functions:
 
 - init_output(self, directory: str) -> None
 - sample(self) -> Any

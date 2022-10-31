@@ -4,10 +4,12 @@ view module
 This module contains the main GUI window and a class for each device
 implementing respective the tab.
 
-Each device-widget must implement the following functions:
+Each device-widget must implement the following functions to be
+compatible with the sampling loop of multilog :
 
 - def set_initialization_data(self, sampling: Any) -> None
 - set_measurement_data(self, rel_time: list, meas_data: Any) -> None
+
 
 MainWindow
 ----------
