@@ -28,7 +28,8 @@ To add a new device to, the following steps are required:
 External usage
 --------------
 The device-classes may also be used as a stand-alone interface to the
-respective measurement devices in other software.
+respective measurement devices in other software. Just copy the required
+code from the device module and import it in your python script!
 
 
 .. toctree::
