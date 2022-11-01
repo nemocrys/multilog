@@ -1,3 +1,6 @@
+"""This module contains the controller-part of multilog. It sets up the
+communication between device and visualization and manages the sampling
+loop."""
 import shutil
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtCore import QTimer, QThread, QObject, pyqtSignal
@@ -18,7 +21,9 @@ logger = logging.getLogger(__name__)
 # This metaclass is required because the pyqtSignal 'signal' must be a class varaible
 # see https://stackoverflow.com/questions/50294652/is-it-possible-to-create-pyqtsignals-on-instances-at-runtime-without-using-class
 class SignalMetaclass(type(QObject)):
-    """Metaclass used to create new signals on the fly."""
+    """Metaclass used to create new signals on the fly, required to
+    setup Sampler class, see
+    https://stackoverflow.com/questions/50294652/is-it-possible-to-create-pyqtsignals-on-instances-at-runtime-without-using-class"""
 
     def __new__(cls, name, bases, dct):
         """Create new class including a pyqtSignal."""
@@ -94,27 +99,24 @@ class Controller(QObject):
         logging.info(f"configuration: {self.config}")
 
         # do that after logging has been configured to log possible errors
-        from .devices import (
-            BaslerCamera,
-            Daq6510,
-            IfmFlowmeter,
-            Eurotherm,
-            OptrisIP640,
-            ProcessConditionLogger,
-            PyrometerArrayLumasense,
-            PyrometerLumasense,
-        )
-        from .view import (
-            BaslerCameraWidget,
-            IfmFlowmeterWidget,
-            MainWindow,
-            Daq6510Widget,
-            EurothermWidget,
-            OptrisIP640Widget,
-            ProcessConditionLoggerWidget,
-            PyrometerLumasenseWidget,
-            PyrometerArrayLumasenseWidget,
-        )
+        from .devices.daq6510 import Daq6510
+        from .devices.basler_camera import BaslerCamera
+        from .devices.ifm_flowmeter import IfmFlowmeter
+        from .devices.eurotherm import Eurotherm
+        from .devices.optris_ip640 import OptrisIP640
+        from .devices.process_condition_logger import ProcessConditionLogger
+        from .devices.pyrometer_array_lumasense import PyrometerArrayLumasense
+        from .devices.pyrometer_lumasense import PyrometerLumasense
+
+        from .view.main_window import MainWindow
+        from .view.daq6510 import Daq6510Widget
+        from .view.basler_camera import BaslerCameraWidget
+        from .view.ifm_flowmeter import IfmFlowmeterWidget
+        from .view.eurotherm import EurothermWidget
+        from .view.optris_ip640 import OptrisIP640Widget
+        from .view.process_condition_logger import ProcessConditionLoggerWidget
+        from .view.pyrometer_array_lumasense import PyrometerArrayLumasenseWidget
+        from .view.pyrometer_lumasense import PyrometerLumasenseWidget
 
         self.sampling_started = False  # this will to be true once "start" was clicked
 
@@ -357,5 +359,5 @@ class Controller(QObject):
 
 
 def main():
-    """Function to execute multilog."""
+    """Execute this function to run multilog."""
     ctrl = Controller()
