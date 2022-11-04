@@ -48,6 +48,20 @@ devices:
         sensor-id: rogowski_300A
         factor: 100 # Ampere / Volt
         unit: A
+      201:
+        type: dcv
+        tab-name: Current
+        range: 10  # V (optional)
+        sensor-id: rogowski_chauvin_arnoux_300A
+        factor: 100 # Ampere / Volt
+        unit: A
+      # 201:
+      #   type: dcv
+      #   tab-name: Current
+      #   range: 10  # V (optional)
+      #   sensor-id: rogowski_PEM_300A
+      #   factor: 50 # Ampere / Volt
+      #   unit: A
       # 206:
       #   type: temperature
       #   sensor-id: Pt-100_1
