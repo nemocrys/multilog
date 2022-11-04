@@ -87,16 +87,23 @@ class Controller(QObject):
     signal_update_camera = pyqtSignal()  # sample and update view
     signal_sample_camera = pyqtSignal(dict)  # sample, update view and save
 
-    def __init__(self) -> None:
-        """Initialize and run multilog."""
+    def __init__(self, config, output_dir) -> None:
+        """Initialize and run multilog.
+
+        Args:
+            config (str): File path of configuration file.
+            output_dir (str): Directory where to put the output.
+        """
         super().__init__()
 
         # load configuration, setup logging
-        with open("./config.yml", encoding="utf-8") as f:
+        with open(config, encoding="utf-8") as f:
             self.config = yaml.safe_load(f)
         logging.basicConfig(**self.config["logging"])
         logging.info("initializing multilog")
         logging.info(f"configuration: {self.config}")
+
+        self.output_dir = output_dir
 
         # do that after logging has been configured to log possible errors
         from .devices.daq6510 import Daq6510
@@ -280,7 +287,7 @@ class Controller(QObject):
         for i in range(100):
             if i == 99:
                 raise ValueError("Too high directory count.")
-            self.directory = f"./measdata_{date}_#{i+1:02}"
+            self.directory = f"{self.output_dir}/measdata_{date}_#{i+1:02}"
             if not os.path.exists(self.directory):
                 os.makedirs(self.directory)
                 break
@@ -358,6 +365,11 @@ class Controller(QObject):
         self.signal_sample_camera.emit({"time_abs": time_abs, "time_rel": time_rel})
 
 
-def main():
-    """Execute this function to run multilog."""
-    ctrl = Controller()
+def main(config, output_dir):
+    """Execute this function to run multilog.
+
+    Args:
+        config (str): File path of configuration file.
+        output_dir (str): Directory where to put the output.
+    """
+    ctrl = Controller(config, output_dir)

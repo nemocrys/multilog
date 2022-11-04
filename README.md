@@ -32,12 +32,18 @@ Additional devices may be included in a flexible manner.
 
 ## Usage
 
-multilog is configured using the file *config.yml* in the main directory. A template [*config_template.yml*](./config_template.yml), including all supported measurement devices, is provided in this repository; please create a copy of this file and adjust it to your needs. Further details are given below.
+multilog is configured by default using the file *config.yml* in the main directory. Outputs are written to the working directory. A template [*config_template.yml*](./config_template.yml), including all supported measurement devices, is provided in this repository; please create a copy of this file and adjust it to your needs. Further details are given below.
 
 To run multilog execute the python file [*multilog.py*](./multilog.py):
 
 ```shell
 python3 ./multilog.py
+```
+
+Alternatively, multilog can be started with the optional command line arguments `-c` and `-o` to give an individual config file and output directory.
+
+```shell
+python3 ./multilog.py -c ./my_config_file.yml -o ../my_output_dir
 ```
 
 If everything is configured correctly, the GUI window opens up. Sampling is started immediately for verification purposes, but the measurements are not recorded yet. Once the *Start* button is clicked, the directory "measdata_*date*_#*XX*" is created and samplings are saved to this directory in csv format. A separate file (or folder for images) is created for each measurement device.
@@ -46,7 +52,7 @@ multilog is built for continuous sampling. In case of problems, check the log fi
 
 ## Configuration
 
-multilog is configured using the file *config.yml* in the main directory. A template [*config_template.yml*](./config_template.yml) including all supported measurement devices is provided in this repository; please create a copy of this file and adjust it to your needs.
+multilog is configured using the file *config.yml* in the main directory or a user-defined config-file provided using the `-c` argument. A template [*config_template.yml*](./config_template.yml) including all supported measurement devices is provided in this repository; please create a copy of this file and adjust it to your needs.
 
 ### Main settings
 
