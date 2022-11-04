@@ -51,7 +51,10 @@ class ProcessConditionLoggerWidget(QWidget):
             if "values" in process_logger.config[condition]:
                 input_box = QComboBox()
                 input_box.addItems(process_logger.config[condition]["values"])
-                input_box.setCurrentText(default_value)
+                if default_value == "":
+                    input_box.setCurrentIndex(-1)
+                else:
+                    input_box.setCurrentText(default_value)
                 input_box.currentIndexChanged.connect(
                     partial(self.update_combo_condition, condition)
                 )
