@@ -11,6 +11,58 @@ logging:
   filemode: a  # w: overwrite old logfile, a: append to existing logfile
   # encoding: 'utf-8'  # only available for python >= 3.9
 devices:
+  Process-Condition-Logger:
+    v_pull:
+      unit: mm/min
+      label: Pulling velocity
+      # default: 0
+    T_ctrl:
+      unit: °C
+      label: Control temperature
+      # default: 0
+    OP:
+      label: Control operating point
+      # default: 0
+    pos_top:
+      label: Top axis position
+      # default: 0
+    rot_crystal:
+      unit: rpm
+      label: Crystal rotation
+      # default: 0
+    rot_crucible:
+      unit: rpm
+      label: Crucible rotation
+      # default: 0
+    pressure:
+      unit: bar
+      label: Furnace pressure
+      # default: 1
+    door:
+      label: Furnace door
+      values:
+        - open
+        - closed
+      # default: open
+    gas:
+      label: Gas atmosphere
+      values:
+        - air
+        - argon
+        - nitrogen
+        - vacuum
+      # default: air
+    tag:
+      label: Process status tag
+      values:
+        - heating up
+        - seeding
+        - growing
+        - cooling down
+      # default: heating up
+    comment:
+      label: Comment
+      # default: "Multilog measurement"
   DAQ-6510:
     serial-interface:
       port: /dev/ttyr00
@@ -235,54 +287,3 @@ devices:
     emissivity: 0.95
     transmissivity: 1.0
     T-ambient: -1000  # Ambient temperature, setting invalid values (below -273,15 degrees) forces the library to take its own measurement values.  # TODO what does that mean?
-  Process-Condition-Logger:
-    v_pull:
-      unit: mm/min
-      label: pulling velocity
-      default: 0
-    T_ctrl:
-      unit: °C
-      label: control temperature
-      default: 0
-    OP:
-      label: control operating point
-      default: 0
-    pos_top:
-      label: top axis position
-      default: 0
-    rot_crystal:
-      unit: rpm
-      label: crystal rotation
-      default: 0
-    rot_crucible:
-      unit: rpm
-      label: crucible rotation
-      default: 0
-    pressure:
-      unit: bar
-      label: furnace pressure
-      default: 1
-    door:
-      label: furnace door
-      values:
-        - open
-        - closed
-      default: open
-    gas:
-      label: gas atmosphere
-      values:
-        - air
-        - argon
-        - nitrogen
-        - vacuum
-      default: air
-    tag:
-      label: process status tag
-      values:
-        - heating up
-        - seeding
-        - growing
-        - cooling down
-      default: heating up
-    comment:
-      default: "Multilog measurement"
