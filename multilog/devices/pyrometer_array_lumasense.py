@@ -1,7 +1,9 @@
+from copy import deepcopy
 import datetime
 import logging
 import numpy as np
 from serial import Serial, SerialException
+import yaml
 
 
 logger = logging.getLogger(__name__)
@@ -49,8 +51,9 @@ class PyrometerArrayLumasense:
             self.meas_data.update({sensor: []})
             self.emissivities.update({sensor: config["sensors"][sensor]["emissivity"]})
             self.t90s.update({sensor: config["sensors"][sensor]["t90"]})
-            self.set_emissivity(head_number, config["sensors"][sensor]["emissivity"])
-            self.set_emissivity(head_number, config["sensors"][sensor]["t90"])
+            if type(self.serial) != SerialMock:
+                self.set_emissivity(head_number, config["sensors"][sensor]["emissivity"])
+                self.set_emissivity(head_number, config["sensors"][sensor]["t90"])
 
     def _get_ok(self):
         """Check if command was accepted."""
@@ -108,7 +111,7 @@ class PyrometerArrayLumasense:
                 sampling.update({sensor: np.nan})
         return sampling
 
-    def init_otput(self, directory="./"):
+    def init_output(self, directory="./"):
         """Initialize the csv output file.
 
         Args:
@@ -125,6 +128,64 @@ class PyrometerArrayLumasense:
         with open(self.filename, "w", encoding="utf-8") as f:
             f.write(units)
             f.write(header)
+        self.write_nomad_files(directory)
+
+    def write_nomad_files(self, directory="./"):
+        """Write .archive.yaml file based on device configuration.
+
+        Args:
+            directory (str, optional): Output directory. Defaults to "./".
+        """
+        with open("./multilog/nomad/archive_template.yml") as f:
+            nomad_template = yaml.safe_load(f)
+        definitions = nomad_template.pop("definitions")
+        data = nomad_template.pop("data")
+        sensor_schema_template = nomad_template.pop("sensor_schema_template")
+        data.update(
+            {
+                "data_file": self.filename.split("/")[-1],
+            }
+        )
+        for sensor_name in self.meas_data:
+            sensor_name_nomad = sensor_name.replace(" ", "_").replace("-", "_")
+            data.update(
+                {
+                    sensor_name_nomad: {
+                        # "model": "your_field_here",
+                        "name": sensor_name_nomad,
+                        # "sensor_id": sensor_name.split(" ")[0],
+                        # "attached_to": sensor_name, # TODO this information is important!
+                        # "measured_property": ,
+                        # "type": sensor_type,
+                        # "notes": "TE_1_K air 155 mm over crucible",
+                        # "unit": self.unit[sensor_name],  # TODO
+                        "emissivity": self.emissivities[sensor_name],
+                        "head_id": self.head_numbering[sensor_name],
+                        "value_timestamp_rel": "#/data/value_timestamp_rel",
+                        "value_timestamp_abs": "#/data/value_timestamp_abs",
+                    }
+                }
+            )
+            sensor_schema = deepcopy(sensor_schema_template)
+            sensor_schema["section"]["quantities"]["value_log"]["m_annotations"][
+                "tabular"
+            ]["name"] = sensor_name
+            definitions["sections"]["Sensors_list"]["sub_sections"].update(
+                {sensor_name_nomad: sensor_schema}
+            )
+            definitions["sections"]["Sensors_list"]["m_annotations"]["plot"].append(
+                {
+                    "label": f"{sensor_name_nomad} over time",
+                    "x": "value_timestamp_rel",
+                    "y": [f"{sensor_name_nomad}/value_log"],
+                }
+            )
+        nomad_dict = {
+            "definitions": definitions,
+            "data": data,
+        }
+        with open(f"{directory}/{self.name}.archive.yaml", "w", encoding="utf-8") as f:
+            yaml.safe_dump(nomad_dict, f, sort_keys=False)
 
     def save_measurement(self, time_abs, time_rel, sampling):
         """Write measurement data to file.
