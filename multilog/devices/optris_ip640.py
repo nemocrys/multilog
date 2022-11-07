@@ -189,8 +189,8 @@ class OptrisIP640:
             )
         with open(f"{self.base_directory}/{self.name}.archive.yaml", "a") as f:
             f.write(f"  - name: {img_name}\n")
-            f.write(f"    image: {self.directory}/{img_name}.png\n")
-            f.write(f"    heat_map: {self.directory}/{img_name}.csv\n")
+            f.write(f"    image: {self.name}/{img_name}.png\n")
+            f.write(f"    heat_map: {self.name}/{img_name}.csv\n")
             f.write(f"    timestamp_rel: {time_rel}\n")
             f.write(
                 f"    timestamp_abs: {time_abs.isoformat(timespec='milliseconds').replace('T', ' ')}\n"
