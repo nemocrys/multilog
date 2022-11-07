@@ -179,13 +179,13 @@ class OptrisIP640:
             f.write(
                 f"{time_abs.isoformat(timespec='milliseconds').replace('T', ' ')},{time_rel},{img_name},\n"
             )
-        with open(f"{self.base_directory}/{self.name}.archive.yaml", "a"):  # todo
+        with open(f"{self.base_directory}/{self.name}.archive.yaml", "a") as f:  # todo
             f.write(f"  - name: {img_name}\n")
             f.write(f"    image: {img_name}.png\n")
             f.write(f"    heat_map: {img_name}.cvs\n")
-            f.write(f"    timestamp_rel: {time_rel}")
+            f.write(f"    timestamp_rel: {time_rel}\n")
             f.write(
-                f"    timestamp_abs: {time_abs.isoformat(timespec='milliseconds').replace('T', ' ')}"
+                f"    timestamp_abs: {time_abs.isoformat(timespec='milliseconds').replace('T', ' ')}\n"
             )
 
         self.image_counter += 1
