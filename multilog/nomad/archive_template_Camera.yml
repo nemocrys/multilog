@@ -1,0 +1,44 @@
+definitions:
+  name: 'Optical cameras data'
+  sections:
+    camera:
+      base_sections:
+        - nomad.datamodel.metainfo.eln.ElnBaseSection
+      m_annotations:
+        eln:
+          hide: [lab_id, description]
+      quantities:
+        image: 
+          type: str
+          description: jpg image
+          m_annotations:
+            browser:
+              adaptor: RawFileAdaptor  
+            eln:
+              component: FileEditQuantity
+        timestamp_rel:
+          type: np.float64
+          description: Relative time
+        timestamp_abs:
+          type: Datetime
+          description: Absolute time
+
+    cameras:
+      base_sections:
+        - nomad.datamodel.data.EntryData
+      m_annotations:
+        eln: 
+          lane_width: 200px
+      sub_sections:
+        cameras_list:
+          repeats: true
+          section: '#/camera'
+data:
+  m_def: cameras
+  cameras_list:
+  # - name: test1
+  #   image: test1.png
+  #   heat_map: test1.dat
+  # - name: test2
+  #   image: test2.png
+  #   heat_map: test2.dat

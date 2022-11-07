@@ -52,7 +52,9 @@ class PyrometerArrayLumasense:
             self.emissivities.update({sensor: config["sensors"][sensor]["emissivity"]})
             self.t90s.update({sensor: config["sensors"][sensor]["t90"]})
             if type(self.serial) != SerialMock:
-                self.set_emissivity(head_number, config["sensors"][sensor]["emissivity"])
+                self.set_emissivity(
+                    head_number, config["sensors"][sensor]["emissivity"]
+                )
                 self.set_emissivity(head_number, config["sensors"][sensor]["t90"])
 
     def _get_ok(self):

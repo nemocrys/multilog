@@ -4,7 +4,9 @@ import matplotlib.pyplot as plt
 import multiprocessing
 import numpy as np
 import os
+import shutil
 import traceback
+
 
 logger = logging.getLogger(__name__)
 try:
@@ -127,11 +129,24 @@ class OptrisIP640:
         Args:
             directory (str, optional): Output directory. Defaults to "./".
         """
+        self.base_directory = directory
         self.directory = f"{directory}/{self.name}"
         os.makedirs(self.directory)
         with open(f"{self.directory}/_images.csv", "w", encoding="utf-8") as f:
             f.write("# datetime,s,filename,\n")
             f.write("time_abs,time_rel,img-name,\n")
+        self.write_nomad_files(directory)
+
+    def write_nomad_files(self, directory="./"):
+        """Write .archive.yaml file based on device configuration.
+
+        Args:
+            directory (str, optional): Output directory. Defaults to "./".
+        """
+        shutil.copy(
+            "./multilog/nomad/archive_template_IR-Camera.yml",
+            f"{directory}/{self.name}.archive.yaml",
+        )
 
     def save_measurement(self, time_abs, time_rel, sampling):
         """Write measurement data to files:
@@ -164,9 +179,18 @@ class OptrisIP640:
             f.write(
                 f"{time_abs.isoformat(timespec='milliseconds').replace('T', ' ')},{time_rel},{img_name},\n"
             )
+        with open(f"{self.base_directory}/{self.name}.archive.yaml", "a"):  # todo
+            f.write(f"  - name: {img_name}\n")
+            f.write(f"    image: {img_name}.png\n")
+            f.write(f"    heat_map: {img_name}.cvs\n")
+            f.write(f"    timestamp_rel: {time_rel}")
+            f.write(
+                f"    timestamp_abs: {time_abs.isoformat(timespec='milliseconds').replace('T', ' ')}"
+            )
+
         self.image_counter += 1
 
     def __del__(self):
-        """Terminate IR camera communictation and remove xml."""
+        """Terminate IR camera communication and remove xml."""
         optris.terminate()
         os.remove(self.xml_file)

@@ -188,9 +188,9 @@ class PyrometerLumasense:
             }
         )
         sensor_schema = deepcopy(sensor_schema_template)
-        sensor_schema["section"]["quantities"]["value_log"]["m_annotations"][
-            "tabular"
-        ]["name"] = "Temperature"
+        sensor_schema["section"]["quantities"]["value_log"]["m_annotations"]["tabular"][
+            "name"
+        ] = "Temperature"
         definitions["sections"]["Sensors_list"]["sub_sections"].update(
             {sensor_name_nomad: sensor_schema}
         )
@@ -207,7 +207,6 @@ class PyrometerLumasense:
         }
         with open(f"{directory}/{self.name}.archive.yaml", "w", encoding="utf-8") as f:
             yaml.safe_dump(nomad_dict, f, sort_keys=False)
-
 
     def save_measurement(self, time_abs, time_rel, sampling):
         """Write measurement data to file.
