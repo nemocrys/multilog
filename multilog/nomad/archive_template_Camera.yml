@@ -1,7 +1,7 @@
 definitions:
-  name: 'Optical cameras data'
+  name: 'Optical camera data'
   sections:
-    camera:
+    image:
       base_sections:
         - nomad.datamodel.metainfo.eln.ElnBaseSection
       m_annotations:
@@ -23,19 +23,19 @@ definitions:
           type: Datetime
           description: Absolute time
 
-    cameras:
+    camera:
       base_sections:
         - nomad.datamodel.data.EntryData
       m_annotations:
         eln: 
           lane_width: 200px
       sub_sections:
-        cameras_list:
+        images_list:
           repeats: true
-          section: '#/camera'
+          section: '#/image'
 data:
-  m_def: cameras
-  cameras_list:
+  m_def: camera
+  images_list:
   # - name: test1
   #   image: test1.png
   #   heat_map: test1.dat
