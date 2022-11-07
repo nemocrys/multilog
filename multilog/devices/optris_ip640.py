@@ -32,6 +32,7 @@ class OptrisIP640:
             xml_dir(str, optional): Directory for xml-file with device
                 configuration. Defaults to "./".
         """
+        self.config = config
         logger.info(f"Initializing OptrisIP640 device '{name}'")
         self.name = name
         self.emissivity = config["emissivity"]
@@ -147,6 +148,13 @@ class OptrisIP640:
             "./multilog/nomad/archive_template_IR-Camera.yml",
             f"{directory}/{self.name}.archive.yaml",
         )
+        with open(f"{self.base_directory}/{self.name}.archive.yaml", "a") as f:
+            f.write(f"  emissivity: {self.emissivity}\n")
+            f.write(f"  transmissivity: {self.transmissivity}\n")
+            f.write(f"  ambient_temperature: {self.t_ambient}\n")
+            f.write(f"  measurement_range: '{self.config['measurement-range']}'\n")
+            f.write(f"  extended_temperature_range: {self.config['extended-T-range']}\n")
+            f.write(f"  ir_images_list:\n")
 
     def save_measurement(self, time_abs, time_rel, sampling):
         """Write measurement data to files:
@@ -179,7 +187,7 @@ class OptrisIP640:
             f.write(
                 f"{time_abs.isoformat(timespec='milliseconds').replace('T', ' ')},{time_rel},{img_name},\n"
             )
-        with open(f"{self.base_directory}/{self.name}.archive.yaml", "a") as f:  # todo
+        with open(f"{self.base_directory}/{self.name}.archive.yaml", "a") as f:
             f.write(f"  - name: {img_name}\n")
             f.write(f"    image: {self.directory}/{img_name}.png\n")
             f.write(f"    heat_map: {self.directory}/{img_name}.csv\n")

@@ -26,6 +26,7 @@ class BaslerCamera:
                 config.yml in the devices-section).
             name (str, optional): Device name.
         """
+        self.config = config
         logger.info(f"Initializing BaslerCamera device '{name}'")
         self.name = name
         self._timeout = config["timeout"]
@@ -114,6 +115,9 @@ class BaslerCamera:
             "./multilog/nomad/archive_template_Camera.yml",
             f"{directory}/{self.name}.archive.yaml",
         )
+        with open(f"{self.base_directory}/{self.name}.archive.yaml", "a") as f:
+            f.write(f"  exposure_time: {self.config['exposure-time']}\n")
+            f.write(f"  ir_images_list:\n")
 
     def save_measurement(self, time_abs, time_rel, sampling):
         """Write measurement data to files:

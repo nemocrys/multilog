@@ -33,9 +33,14 @@ definitions:
         images_list:
           repeats: true
           section: '#/image'
+      quantities:
+        exposure_time:
+          type: np.float64
+          description: Exposure time in micro seconds
 data:
   m_def: camera
-  images_list:
+  # exposure_time: 10.e+3
+  # images_list:
   # - name: test1
   #   image: test1.png
   #   heat_map: test1.dat
