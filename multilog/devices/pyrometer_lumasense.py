@@ -3,6 +3,7 @@ import datetime
 import logging
 import numpy as np
 from serial import Serial, SerialException
+import yaml
 
 logger = logging.getLogger(__name__)
 
@@ -31,15 +32,16 @@ class PyrometerLumasense:
         logger.info(f"Initializing PyrometerLumasense device '{name}'")
         self.device_id = config["device-id"]
         self.name = name
+        self.t90_dict = config["t90-dict"]
         try:
             self.serial = Serial(**config["serial-interface"])
         except SerialException as e:
             logger.exception(f"Connection to {self.name} not possible.")
             self.serial = SerialMock()
-        self.set_emissivity(config["emissivity"])
-        self.set_transmissivity(config["transmissivity"])
-        self.t90_dict = config["t90-dict"]
-        self.set_t90(config["t90"])
+        if type(self.serial) != SerialMock:
+            self.set_emissivity(config["emissivity"])
+            self.set_transmissivity(config["transmissivity"])
+            self.set_t90(config["t90"])
         self.meas_data = []
 
     def _get_ok(self):
@@ -61,6 +63,8 @@ class PyrometerLumasense:
     @property
     def intrument_id(self):
         """Get the instrument id."""
+        if type(self.serial) == SerialMock:
+            return -1
         cmd = f"{self.device_id}na\r"
         self.serial.write(cmd.encode())
         return self.serial.readline().decode().strip()
@@ -68,6 +72,8 @@ class PyrometerLumasense:
     @property
     def emissivity(self):
         """Read the current emissivity."""
+        if type(self.serial) == SerialMock:
+            return -1
         cmd = f"{self.device_id}em\r"
         self.serial.write(cmd.encode())
         return self._get_float()
@@ -75,6 +81,8 @@ class PyrometerLumasense:
     @property
     def transmissivity(self):
         """Read the current transmissivity."""
+        if type(self.serial) == SerialMock:
+            return -1
         cmd = f"{self.device_id}et\r"
         self.serial.write(cmd.encode())
         return self._get_float()
@@ -82,6 +90,8 @@ class PyrometerLumasense:
     @property
     def t90(self):
         """Reat the current t90 value."""
+        if type(self.serial) == SerialMock:
+            return -1
         cmd = f"{self.device_id}ez\r"
         self.serial.write(cmd.encode())
         idx = int(self.serial.readline().decode().strip())
@@ -139,6 +149,64 @@ class PyrometerLumasense:
         with open(self.filename, "w", encoding="utf-8") as f:
             f.write(units)
             f.write(header)
+        self.write_nomad_files(directory)
+
+    def write_nomad_files(self, directory="./"):
+        """Write .archive.yaml file based on device configuration.
+
+        Args:
+            directory (str, optional): Output directory. Defaults to "./".
+        """
+        with open("./multilog/nomad/archive_template.yml") as f:
+            nomad_template = yaml.safe_load(f)
+        definitions = nomad_template.pop("definitions")
+        data = nomad_template.pop("data")
+        sensor_schema_template = nomad_template.pop("sensor_schema_template")
+        data.update(
+            {
+                "data_file": self.filename.split("/")[-1],
+            }
+        )
+        sensor_name_nomad = self.name.replace(" ", "_").replace("-", "_")
+        data.update(
+            {
+                sensor_name_nomad: {
+                    # "model": "your_field_here",
+                    "name": sensor_name_nomad,
+                    # "sensor_id": sensor_name.split(" ")[0],
+                    # "attached_to": sensor_name, # TODO this information is important!
+                    # "measured_property": ,
+                    # "type": sensor_type,
+                    # "notes": "TE_1_K air 155 mm over crucible",
+                    # "unit": self.unit[sensor_name],  # TODO
+                    "emissivity": self.emissivity,
+                    "transmissivity": self.transmissivity,
+                    "t90": self.t90,
+                    "value_timestamp_rel": "#/data/value_timestamp_rel",
+                    "value_timestamp_abs": "#/data/value_timestamp_abs",
+                }
+            }
+        )
+        sensor_schema = deepcopy(sensor_schema_template)
+        sensor_schema["section"]["quantities"]["value_log"]["m_annotations"]["tabular"][
+            "name"
+        ] = "Temperature"
+        definitions["sections"]["Sensors_list"]["sub_sections"].update(
+            {sensor_name_nomad: sensor_schema}
+        )
+        definitions["sections"]["Sensors_list"]["m_annotations"]["plot"].append(
+            {
+                "label": f"{sensor_name_nomad} over time",
+                "x": "value_timestamp_rel",
+                "y": [f"{sensor_name_nomad}/value_log"],
+            }
+        )
+        nomad_dict = {
+            "definitions": definitions,
+            "data": data,
+        }
+        with open(f"{directory}/{self.name}.archive.yaml", "w", encoding="utf-8") as f:
+            yaml.safe_dump(nomad_dict, f, sort_keys=False)
 
     def save_measurement(self, time_abs, time_rel, sampling):
         """Write measurement data to file.

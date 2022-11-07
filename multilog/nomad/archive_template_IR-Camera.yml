@@ -1,0 +1,73 @@
+definitions:
+  name: 'IR camera data'
+  sections:
+    IR_image:
+      base_sections:
+        - nomad.datamodel.metainfo.eln.ElnBaseSection
+      m_annotations:
+        eln:
+          hide: [lab_id, description]
+      quantities:
+        image: 
+          type: str
+          description: png visualization of heat map matrix
+          m_annotations:
+            browser:
+              adaptor: RawFileAdaptor  
+            eln:
+              component: FileEditQuantity
+        heat_map: 
+          type: str
+          description: heat map matrix 
+          m_annotations:
+            browser:
+              adaptor: RawFileAdaptor 
+            eln:
+              component: FileEditQuantity
+        timestamp_rel:
+          type: np.float64
+          description: Relative time
+        timestamp_abs:
+          type: Datetime
+          description: Absolute time
+
+    IR_camera:
+      base_sections:
+        - nomad.datamodel.data.EntryData
+      m_annotations:
+        eln: 
+          lane_width: 200px
+      sub_sections:
+        ir_images_list:
+          repeats: true
+          section: '#/IR_image'
+      quantities:
+        emissivity:
+          type: np.float64
+          description: Emissivity of the measurement series
+        transmissivity:
+          type: np.float64
+          description: Transmissivity of the measurement series
+        ambient_temperature:
+          type: np.float64
+          description: Ambient temperature of the measurement series
+        measurement_range:
+          type: str
+          description: Measurement range of the measurement series
+        extended_temperature_range:
+          type: int
+          description: "0: off, 1: on"
+data:
+  m_def: IR_camera
+  # emissivity: 1
+  # transmissivity: 1
+  # ambient_temperature: -1000
+  # measurement_range: "[0, 250]"
+  # extended_temperature_range: 0
+  # ir_images_list:
+  # - name: test1
+  #   image: test1.png
+  #   heat_map: test1.dat
+  # - name: test2
+  #   image: test2.png
+  #   heat_map: test2.dat
