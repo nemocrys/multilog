@@ -167,15 +167,15 @@ class IfmFlowmeter:
         with open(self.filename, "w", encoding="utf-8") as f:
             f.write(units)
             f.write(header)
-        self.write_nomad_files(directory)
+        self.write_nomad_file(directory)
 
-    def write_nomad_files(self, directory="./"):
+    def write_nomad_file(self, directory="./"):
         """Write .archive.yaml file based on device configuration.
 
         Args:
             directory (str, optional): Output directory. Defaults to "./".
         """
-        with open("./multilog/nomad/archive_template.yml") as f:
+        with open("./multilog/nomad/archive_template_sensor.yml") as f:
             nomad_template = yaml.safe_load(f)
         definitions = nomad_template.pop("definitions")
         data = nomad_template.pop("data")

@@ -103,9 +103,9 @@ class BaslerCamera:
             f.write("time_abs,time_rel,img-name,\n")
         with open(f"{self.directory}/device.txt", "w", encoding="utf-8") as f:
             f.write(self.device_name)
-        self.write_nomad_files(directory)
+        self.write_nomad_file(directory)
 
-    def write_nomad_files(self, directory="./"):
+    def write_nomad_file(self, directory="./"):
         """Write .archive.yaml file based on device configuration.
 
         Args:

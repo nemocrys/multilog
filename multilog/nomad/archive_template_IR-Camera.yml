@@ -1,3 +1,6 @@
+# NOMAD template for IR camera, based on
+# https://github.com/FAIRmat-NFDI/AreaA-data_modeling_and_schemas/blob/main/melt_czochralski_Dadzis/IRcameras.archive.yaml
+
 definitions:
   name: 'IR camera data'
   sections:
