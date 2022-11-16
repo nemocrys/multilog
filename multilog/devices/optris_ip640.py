@@ -136,9 +136,9 @@ class OptrisIP640:
         with open(f"{self.directory}/_images.csv", "w", encoding="utf-8") as f:
             f.write("# datetime,s,filename,\n")
             f.write("time_abs,time_rel,img-name,\n")
-        self.write_nomad_files(directory)
+        self.write_nomad_file(directory)
 
-    def write_nomad_files(self, directory="./"):
+    def write_nomad_file(self, directory="./"):
         """Write .archive.yaml file based on device configuration.
 
         Args:

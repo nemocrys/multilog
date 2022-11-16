@@ -1,6 +1,7 @@
 """This module contains the controller-part of multilog. It sets up the
 communication between device and visualization and manages the sampling
 loop."""
+from copy import deepcopy
 import shutil
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtCore import QTimer, QThread, QObject, pyqtSignal
@@ -293,12 +294,70 @@ class Controller(QObject):
                 break
         for device in self.devices:
             self.devices[device].init_output(self.directory)
+        self.write_nomad_file()
         self.write_metadata()
         shutil.copy(
             "./multilog/nomad/base_classes.schema.archive.yaml",
             f"{self.directory}/base_classes.schema.archive.yaml",
         )
         self.main_window.set_output_directory(self.directory)
+
+    def write_nomad_file(self):
+        """Write main multilog.archive.yaml including an overview of all devices."""
+        with open("./multilog/nomad/archive_template_main.yml") as f:
+            nomad_dict = yaml.safe_load(f)
+        data = nomad_dict.pop("data")
+        multilog_version = (
+            subprocess.check_output(
+                ["git", "describe", "--tags", "--dirty", "--always"]
+            )
+            .strip()
+            .decode("utf-8")
+        )
+        data["data_processing"].update(
+            {
+                "software": f"multilog {multilog_version}",
+                "sampling_time": self.config["settings"]["dt-main"],
+            }
+        )
+
+        inst_ir_cam = nomad_dict.pop("instrumentation_IR-camera_template")
+        inst_camera = nomad_dict.pop("instrumentation_camera_template")
+        inst_sensors = nomad_dict.pop("instrumentation_sensors_template")
+        for device_name in self.devices:
+            nomad_name = device_name.replace(" ", "_").replace("-", "_")
+            if "Optris-IP-640" in device_name:
+                instrument = deepcopy(inst_ir_cam)
+                instrument["section"]["quantities"]["ir_camera"]["type"] = f"../upload/raw/{device_name}.archive.yaml#IR_camera"
+                nomad_dict["definitions"]["sections"]["MeltCzochralski"]["sub_sections"]["instrumentation"]["section"]["sub_sections"].update(
+                    {nomad_name: instrument}
+                )
+                data["instrumentation"][nomad_name] = {
+                    "ir_camera": f"../upload/raw/{device_name}.archive.yaml#data"
+                }
+            elif "Basler" in device_name:
+                instrument = deepcopy(inst_camera)
+                instrument["section"]["quantities"]["camera"]["type"] = f"../upload/raw/{device_name}.archive.yaml#camera"
+                nomad_dict["definitions"]["sections"]["MeltCzochralski"]["sub_sections"]["instrumentation"]["section"]["sub_sections"].update(
+                    {nomad_name: instrument}
+                )
+                data["instrumentation"][nomad_name] = {
+                    "camera": f"../upload/raw/{device_name}.archive.yaml#data"
+                }
+            else:
+                instrument = deepcopy(inst_sensors)
+                instrument["section"]["quantities"]["sensors_list"]["type"] = f"../upload/raw/{device_name}.archive.yaml#Sensors_list"
+                nomad_dict["definitions"]["sections"]["MeltCzochralski"]["sub_sections"]["instrumentation"]["section"]["sub_sections"].update(
+                    {nomad_name: instrument}
+                )
+                data["instrumentation"][nomad_name] = {
+                    "sensors_list": f"../upload/raw/{device_name}.archive.yaml#data"
+                }
+        
+            nomad_dict.update({"data": data})
+            with open(f"{self.directory}/multilog_eln.archive.yaml", "w", encoding="utf-8") as f:
+                yaml.safe_dump(nomad_dict, f, sort_keys=False)
+
 
     def write_metadata(self):
         """Write a csv file with information about multilog version,
