@@ -97,7 +97,7 @@ class ProcessConditionLogger:
                 {
                     sensor_name_nomad: {
                         # "model": "your_field_here",
-                        "name": sensor_name_nomad,
+                        # "name": sensor_name_nomad,
                         # "sensor_id": sensor_name.split(" ")[0],
                         # "attached_to": sensor_name, # TODO this information is important!
                         # "measured_property": ,
@@ -109,6 +109,8 @@ class ProcessConditionLogger:
                     }
                 }
             )
+            if "comment" in self.config[sensor_name]:
+                data[sensor_name_nomad].update({"comment": self.config[sensor_name]["comment"]})
             sensor_schema = deepcopy(sensor_schema_template)
             sensor_schema["section"]["quantities"]["value_log"]["m_annotations"][
                 "tabular"

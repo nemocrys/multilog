@@ -289,20 +289,19 @@ class Daq6510:
             data.update(
                 {
                     sensor_name_nomad: {
-                        # "model": "your_field_here",
-                        "name": sensor_name_nomad,
-                        "sensor_id": sensor_name.split(" ")[0],
-                        "attached_to": " ".join(sensor_name.split(" ")[1:]),
-                        "measured_property": self.config["channels"][channel]["type"],
-                        "type": sensor_name.split("_")[0].split(" ")[0],
-                        # "notes": "TE_1_K air 155 mm over crucible",
-                        # "unit": self.unit[sensor_name],  # TODO
-                        # "channel": channel,  # TODO
+                        # "model": "your_field_here",  currently not in nomad schema
+                        # "name": sensor_name_nomad,  currently not in nomad schema
+                        # "sensor_id": sensor_name.split(" ")[0],  currently not in nomad schema
+                        # "attached_to": " ".join(sensor_name.split(" ")[1:]),  currently not in nomad schema
+                        # "measured_property": self.config["channels"][channel]["type"],  currently not in nomad schema
+                        # "type": sensor_name.split("_")[0].split(" ")[0],  currently not in nomad schema
                         "value_timestamp_rel": "#/data/value_timestamp_rel",
                         "value_timestamp_abs": "#/data/value_timestamp_abs",
                     }
                 }
             )
+            if "comment" in self.config["channels"][channel]:
+                data[sensor_name_nomad].update({"comment": self.config["channels"][channel]["comment"]})
             sensor_schema = deepcopy(sensor_schema_template)
             sensor_schema["section"]["quantities"]["value_log"]["m_annotations"][
                 "tabular"

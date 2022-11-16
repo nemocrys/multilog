@@ -117,6 +117,8 @@ class BaslerCamera:
         )
         with open(f"{self.base_directory}/{self.name}.archive.yaml", "a") as f:
             f.write(f"  exposure_time: {self.config['exposure-time']}\n")
+            if "comment" in self.config:
+                f.write(f"  comment: {self.config['comment']}\n")
             f.write(f"  images_list:\n")
 
     def save_measurement(self, time_abs, time_rel, sampling):

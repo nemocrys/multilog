@@ -196,11 +196,11 @@ class IfmFlowmeter:
                     {
                         sensor_name_nomad: {
                             # "model": "your_field_here",
-                            "name": sensor_name_nomad,
+                            # "name": sensor_name_nomad,
                             # "sensor_id": sensor_name.split(" ")[0],
-                            "attached_to": sensor_name,
-                            "measured_property": property,
-                            "type": sensor_type,
+                            # "attached_to": sensor_name,
+                            # "measured_property": property,
+                            # "type": sensor_type,
                             # "notes": "TE_1_K air 155 mm over crucible",
                             # "unit": self.unit[sensor_name],  # TODO
                             # "channel": channel,  # TODO
@@ -209,6 +209,8 @@ class IfmFlowmeter:
                         }
                     }
                 )
+                if "comment" in self.config["ports"][port]:
+                    data[sensor_name_nomad].update({"comment": self.config["ports"][port]["comment"]})
                 sensor_schema = deepcopy(sensor_schema_template)
                 sensor_schema["section"]["quantities"]["value_log"]["m_annotations"][
                     "tabular"

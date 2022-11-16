@@ -40,6 +40,12 @@ definitions:
         exposure_time:
           type: np.float64
           description: Exposure time in micro seconds
+        comment:
+          type: str
+          m_annotations:
+            eln:
+              component: StringEditQuantity
+          description: "Comment, e.g. sensor position"
 data:
   m_def: camera
   # exposure_time: 10.e+3
