@@ -39,39 +39,8 @@ definitions:
                       m_annotations:
                         eln:
                           component: StringEditQuantity
-                    # fan:
-                    #   type: str
-                    #   m_annotations:
-                    #     eln:
-                    #       component: StringEditQuantity
-                    # pump:
-                    #   type: str
-                    #   m_annotations:
-                    #     eln:
-                    #       component: StringEditQuantity
-                    # sensors:
-                    #   type: str
-                    #   m_annotations:
-                    #     eln:
-                    #       component: StringEditQuantity
-        data_processing:
-          section:
-            quantities:
-              software:
-                type: str
-                m_annotations:
-                  eln:
-                    component: StringEditQuantity
-                description: "Software used for logging"
-              sampling_time:
-                type: np.float64
-                unit: ms
-                m_annotations:
-                  eln:
-                    component: NumberEditQuantity
-                    defaultDisplayUnit: ms
-                description: "Time between sampled points"
-        instrumentation:
+                    # keep listing other useful parameters here
+        configuration:
           section:
             m_annotations:
               eln:
@@ -110,6 +79,37 @@ definitions:
                       m_annotations:
                         eln:
                           component: StringEditQuantity
+        data_processing:
+          section:
+            quantities:
+              software:
+                type: str
+                m_annotations:
+                  eln:
+                    component: StringEditQuantity
+                description: "Software used for logging"
+              sampling_time:
+                type: np.float64
+                unit: ms
+                m_annotations:
+                  eln:
+                    component: NumberEditQuantity
+                    defaultDisplayUnit: ms
+                description: "Time between sampled points"
+              image_time:
+                type: np.float64
+                unit: ms
+                m_annotations:
+                  eln:
+                    component: NumberEditQuantity
+                    defaultDisplayUnit: ms
+                description: "Time between recorded images"
+        instrumentation:
+          section:
+            m_annotations:
+              eln:
+                lane_width: 200px
+            sub_sections: {}
               # templates form below will be inserted here
 
 instrumentation_IR-camera_template:
@@ -154,13 +154,22 @@ instrumentation_sensors_template:
 
 data:  
   m_def: MeltCzochralski
-  data_processing: #section name - not to be filled
+  process:
+    # activity_identifier: my_id
+    # activity_method: Melt Czochralski
+    start_time: "2021-03-04 10:15:00+01"  # will be set automatically
+    # activity_category: crystal growth synthesis
+    # end_time: 2021-03-04 10:15:00+01
+    # location: Berlin
+  data_processing:
     software: multilog vXXX  # will be set automatically
     sampling_time: -1  # will be set automatically
-  instrumentation: #section name - not to be filled
-    furnace: #section name - not to be filled
-      furnace_type: Test-Cz
-    # heating: #section name - not to be filled
+    image_time: -1  # will be set automatically
+  instrumentation:
+    {}
+    # furnace:
+    #   furnace_type: Test-Cz
+    # heating:
     #   heater_type: 
     #   heater_id: vXXX
 
@@ -172,11 +181,3 @@ data:
     #   sensors_locations: sensor_geometry.png # TODO fill name here
     #   sensors_list: ../upload/raw/Sensors.archive.yaml#data # TODO fill name here
   
-  # TODO complete this
-  # process: #section name - not to be filled
-  #   activity_identifier: my_id
-  #   activity_category: crystal growth synthesis
-  #   activity_method: Melt Czochralski
-    # location: Berlin
-    # start_time: 2021-03-04 10:15:00+01
-    # end_time: 2021-03-04 10:15:00+01
