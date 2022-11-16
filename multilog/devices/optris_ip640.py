@@ -154,6 +154,8 @@ class OptrisIP640:
             f.write(f"  ambient_temperature: {self.t_ambient}\n")
             f.write(f"  measurement_range: '{self.config['measurement-range']}'\n")
             f.write(f"  extended_temperature_range: {self.config['extended-T-range']}\n")
+            if "comment" in self.config:
+                f.write(f"  comment: {self.config['comment']}\n")
             f.write(f"  ir_images_list:\n")
 
     def save_measurement(self, time_abs, time_rel, sampling):

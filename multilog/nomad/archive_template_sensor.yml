@@ -9,7 +9,7 @@ definitions:
       - nomad.parsing.tabular.TableData
       - nomad.datamodel.data.EntryData
       m_annotations:
-        plot: []
+        plot: []  # will be filled automatically
           # - label: My test plot label 1
           #   x: value_timestamp_rel
           #   y: 
@@ -47,10 +47,11 @@ definitions:
             This is to timestamp the nominal setpoint or
             average reading values listed above in the value field.
       sub_sections:
-        {}
+        {}  # will be filled with sensor_schema_template
 data:
   m_def: Sensors_list
-  data_file: test.csv
+  data_file: test.csv  # will be replaced
+  # will be filled further by multilog
 
 sensor_schema_template:
   section:
@@ -96,5 +97,11 @@ sensor_schema_template:
           eln:
             component: NumberEditQuantity
             defaultDisplayUnit: second
+      comment:
+        type: str
+        m_annotations:
+          eln:
+            component: StringEditQuantity
+        description: "Comment, e.g. sensor position"
       # TODO keep listing all the quantities here
 

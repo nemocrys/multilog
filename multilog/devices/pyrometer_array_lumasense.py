@@ -31,6 +31,7 @@ class PyrometerArrayLumasense:
             name (str, optional): Device name.
         """
         logger.info(f"Initializing PyrometerArrayLumasense device '{name}'")
+        self.config = config
         self.device_id = config["device-id"]
         self.name = name
         try:
@@ -154,7 +155,7 @@ class PyrometerArrayLumasense:
                 {
                     sensor_name_nomad: {
                         # "model": "your_field_here",
-                        "name": sensor_name_nomad,
+                        # "name": sensor_name_nomad,
                         # "sensor_id": sensor_name.split(" ")[0],
                         # "attached_to": sensor_name, # TODO this information is important!
                         # "measured_property": ,
@@ -162,12 +163,15 @@ class PyrometerArrayLumasense:
                         # "notes": "TE_1_K air 155 mm over crucible",
                         # "unit": self.unit[sensor_name],  # TODO
                         "emissivity": self.emissivities[sensor_name],
-                        "head_id": self.head_numbering[sensor_name],
+                        # "head_id": self.head_numbering[sensor_name],
+                        "t90": self.t90_dict[self.head_numbering[sensor_name]],
                         "value_timestamp_rel": "#/data/value_timestamp_rel",
                         "value_timestamp_abs": "#/data/value_timestamp_abs",
                     }
                 }
             )
+            if "comment" in self.config["sensors"][sensor_name]:
+                data[sensor_name_nomad].update({"comment": self.config["sensors"][sensor_name]["comment"]})
             sensor_schema = deepcopy(sensor_schema_template)
             sensor_schema["section"]["quantities"]["value_log"]["m_annotations"][
                 "tabular"

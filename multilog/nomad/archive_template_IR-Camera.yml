@@ -60,6 +60,12 @@ definitions:
         extended_temperature_range:
           type: int
           description: "0: off, 1: on"
+        comment:
+          type: str
+          m_annotations:
+            eln:
+              component: StringEditQuantity
+          description: "Comment, e.g. sensor position"
 data:
   m_def: IR_camera
   # emissivity: 1

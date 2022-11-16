@@ -30,6 +30,7 @@ class PyrometerLumasense:
             name (str, optional): Device name.
         """
         logger.info(f"Initializing PyrometerLumasense device '{name}'")
+        self.config = config
         self.device_id = config["device-id"]
         self.name = name
         self.t90_dict = config["t90-dict"]
@@ -172,7 +173,7 @@ class PyrometerLumasense:
             {
                 sensor_name_nomad: {
                     # "model": "your_field_here",
-                    "name": sensor_name_nomad,
+                    # "name": sensor_name_nomad,
                     # "sensor_id": sensor_name.split(" ")[0],
                     # "attached_to": sensor_name, # TODO this information is important!
                     # "measured_property": ,
@@ -187,6 +188,8 @@ class PyrometerLumasense:
                 }
             }
         )
+        if "comment" in self.config:
+            data[sensor_name_nomad].update({"comment": self.config["comment"]})
         sensor_schema = deepcopy(sensor_schema_template)
         sensor_schema["section"]["quantities"]["value_log"]["m_annotations"]["tabular"][
             "name"
