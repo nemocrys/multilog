@@ -60,7 +60,6 @@ sensor_schema_template:
         - label: value_log over time
           x: value_timestamp_rel
           y: value_log
-    base_section: ../upload/raw/base_classes.schema.archive.yaml#Sample
     quantities:
       value_log:  # The one we actually measurement
         type: np.float64  # TODO try if that can be removed, it's already present in parent class
