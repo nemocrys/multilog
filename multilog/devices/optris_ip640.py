@@ -202,5 +202,7 @@ class OptrisIP640:
 
     def __del__(self):
         """Terminate IR camera communication and remove xml."""
+        logger.debug(f"Deleting IR camera {self}")
         optris.terminate()
         os.remove(self.xml_file)
+        logger.debug(f"Terminated optris and removed xml.")

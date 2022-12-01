@@ -177,5 +177,7 @@ class BaslerCamera:
 
     def __del__(self):
         """Stopp sampling, reset device."""
+        logger.debug(f"Deleting balser camera {self}")
         self._device.StopGrabbing()
         self._device.Close()
+        logger.debug(f"Stopped grabbing and closed device.")
