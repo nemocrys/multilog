@@ -210,10 +210,12 @@ class Controller(QObject):
             self.tabs.update({device_name: widget})
 
         # setup threads
+        logger.debug("Setting up threads")
         self.samplers = []
         self.threads = []
         for device in self.devices:
             thread = QThread()
+            logger.debug(f"{device} in thread {thread}")
             sampler = Sampler({device: self.devices[device]})
             sampler.moveToThread(thread)
             sampler.signal.connect(self.update_view)
@@ -273,10 +275,15 @@ class Controller(QObject):
         """This is executed when the exit button is clicked."""
         logger.info("Stopping sampling")
         self.timer_update_camera.stop()
+        logger.debug("Stopped timer_update_camera")
         self.timer_measurement_main.stop()
+        logger.debug("Stopped timer_measurement_main")
         self.timer_measurement_camera.stop()
+        logger.debug("Stopped timer_measurement_camera")
+        logger.debug("Waiting 1s for threads to finish")
         time.sleep(1)  # to finish last sampling jobs (running in separate threads)
         for thread in self.threads:
+            logger.debug(f"Quitting thread {thread}")
             thread.quit()
         logger.info("Stopped sampling")
         exit()
