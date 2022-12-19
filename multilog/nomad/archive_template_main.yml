@@ -4,17 +4,51 @@
 
 definitions:
   name: 'Electronic Lab Notebook' 
-  sections:  # Schemas consist of section definitions
-    MeltCzochralski:  
-      # Inheriting it from EntryData, makes this section a possible
-      # EntryArchive.data sub-section
+  sections:
+    Data_processing:
       base_sections: 
-      - nomad.datamodel.metainfo.eln.ElnBaseSection
+      - ../upload/raw/base_classes.schema.archive.yaml#Task
+      quantities:
+        software:
+          type: str
+          m_annotations:
+            eln:
+              component: StringEditQuantity
+          description: Software used for logging
+        sampling_time:
+          type: np.float64
+          unit: ms
+          m_annotations:
+            eln:
+              component: NumberEditQuantity
+              defaultDisplayUnit: ms
+          description: Time between sampled points
+        image_time:
+          type: np.float64
+          unit: ms
+          m_annotations:
+            eln:
+              component: NumberEditQuantity
+              defaultDisplayUnit: ms
+          description: Time between recorded images
+    My_nice_process:
+      base_sections: 
+      - ../upload/raw/base_classes.schema.archive.yaml#Task
+      quantities:
+        my_nice_quantity:
+          type: str
+          m_annotations:
+            eln:
+              component: StringEditQuantity
+          description: "a quantity describing my process"
+    MeltCzochralski:  
+      base_sections: 
+      - ../upload/raw/base_classes.schema.archive.yaml#Experiment 
       - nomad.datamodel.data.EntryData
       m_annotations:
         eln:
           hide: [name, description]
-          lane_width: 200px
+          lane_width: 400px
       sub_sections:
         users:
           section:
@@ -25,32 +59,32 @@ definitions:
                 m_annotations:
                   eln:
                     component: AuthorEditQuantity
-        process:
-          section:
-            base_section: ../upload/raw/base_classes.schema.archive.yaml#Process 
-            sub_sections:
-              procedure:
-                repeats: true
-                section: 
-                  base_section: ../upload/raw/base_classes.schema.archive.yaml#Procedure_step
-                  quantities:
-                    crystal_diameter:
-                      type: str
-                      m_annotations:
-                        eln:
-                          component: StringEditQuantity
-                    # keep listing other useful parameters here
+        # process:
+        #   section:
+        #     base_section: ../upload/raw/base_classes.schema.archive.yaml#Process 
+        #     sub_sections:
+        #       procedure:
+        #         repeats: true
+        #         section: 
+        #           base_section: ../upload/raw/base_classes.schema.archive.yaml#Procedure_step
+        #           quantities:
+        #             crystal_diameter:
+        #               type: str
+        #               m_annotations:
+        #                 eln:
+        #                   component: StringEditQuantity
+        #             # keep listing other useful parameters here
         configuration:
           section:
             m_annotations:
               eln:
-                lane_width: 200px
+                lane_width: 400px
             sub_sections:
               furnace:
                 section:
                   m_annotations:
                     eln:
-                      lane_width: 200px
+                      lane_width: 400px
                   quantities:
                     furnace_type:
                       type: str
@@ -62,7 +96,7 @@ definitions:
                 section:
                   m_annotations:
                     eln:
-                      lane_width: 200px
+                      lane_width: 400px
                   quantities:
                     heater_type:
                       type:
@@ -79,92 +113,25 @@ definitions:
                       m_annotations:
                         eln:
                           component: StringEditQuantity
-        data_processing:
-          section:
-            quantities:
-              software:
-                type: str
-                m_annotations:
-                  eln:
-                    component: StringEditQuantity
-                description: "Software used for logging"
-              sampling_time:
-                type: np.float64
-                unit: ms
-                m_annotations:
-                  eln:
-                    component: NumberEditQuantity
-                    defaultDisplayUnit: ms
-                description: "Time between sampled points"
-              image_time:
-                type: np.float64
-                unit: ms
-                m_annotations:
-                  eln:
-                    component: NumberEditQuantity
-                    defaultDisplayUnit: ms
-                description: "Time between recorded images"
         instrumentation:
           section:
             m_annotations:
               eln:
-                lane_width: 200px
-            sub_sections: {}
-              # templates form below will be inserted here
+                lane_width: 400px
+            quantities: {}
 
-instrumentation_IR-camera_template:
-  section:
-    m_annotations:
-      eln:
-        lane_width: 200px
-    quantities:
-      ir_camera:
-        type: ../upload/raw/IRcameras.archive.yaml#IR_camera  # this will be replaced
-instrumentation_camera_template:
-  section:
-    m_annotations:
-      eln:
-        lane_width: 200px
-    quantities:
-      camera:
-        type: ../upload/raw/IRcameras.archive.yaml#IR_camera  # this will be replaced
-instrumentation_sensors_template:
-  section:
-    m_annotations:
-      eln:
-        lane_width: 200px
-      # plot:
-      #   title: Sensors for growth monitoring
-      #   x: time
-      #   y: 
-      #     - TE_1_front
-      #     - TE_2_vessel
-    quantities:
-      sensors_locations:
-        type: str
-        description: Picture of sensor locations
-        m_annotations:
-          browser:
-            adaptor: RawFileAdaptor  # Allows to navigate to files in the data browser
-          eln:
-            component: FileEditQuantity
-      sensors_list:
-        type: ../upload/raw/Sensors.archive.yaml#Sensors_list  # this will be replaced
-        #shape: ['*']
 
 data:  
   m_def: MeltCzochralski
-  process:
-    # activity_identifier: my_id
-    # activity_method: Melt Czochralski
-    start_time: "2021-03-04 10:15:00+01"  # will be set automatically
-    # activity_category: crystal growth synthesis
-    # end_time: 2021-03-04 10:15:00+01
-    # location: Berlin
-  data_processing:
-    software: multilog vXXX  # will be set automatically
-    sampling_time: -1  # will be set automatically
-    image_time: -1  # will be set automatically
+  timestamp:  '2023-01-01 00:00:00.001+01:00'  # this will be replaced
+  tasks:
+    - m_def: Data_processing
+      name: Data_processing
+      software: multilog vXXX  # will be set automatically
+      sampling_time: -1  # will be set automatically
+      image_time: -1  # will be set automatically
+    - m_def: My_nice_process
+      name: "My_nice_process"
   instrumentation:
     {}
     # furnace:
