@@ -10,12 +10,6 @@ definitions:
       - nomad.datamodel.data.EntryData
       m_annotations:
         lane_width: 400px
-        plot: []  # will be filled automatically
-          # - label: My test plot label 1
-          #   x: value_timestamp_rel
-          #   y: 
-          #     - temperature_sensor_1/value_log
-          #     - pyrosensor_2/value_log
       quantities:
         data_file:
           type: str
