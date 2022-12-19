@@ -321,8 +321,8 @@ class Controller(QObject):
             .strip()
             .decode("utf-8")
         )
-        data["process"]["start_time"] = datetime.datetime.now(datetime.timezone.utc).astimezone().isoformat(timespec='milliseconds').replace('T', ' ')
-        data["data_processing"].update(
+        data["timestamp"] = datetime.datetime.now(datetime.timezone.utc).astimezone().isoformat(timespec='milliseconds').replace('T', ' ')
+        data["tasks"][0].update(
             {
                 "software": f"multilog {multilog_version}",
                 "sampling_time": self.config["settings"]["dt-main"],
@@ -330,38 +330,23 @@ class Controller(QObject):
             }
         )
 
-        template_ir_cam = nomad_dict.pop("instrumentation_IR-camera_template")
-        template_camera = nomad_dict.pop("instrumentation_camera_template")
-        template_sensor = nomad_dict.pop("instrumentation_sensors_template")
         for device_name in self.devices:
             nomad_name = device_name.replace(" ", "_").replace("-", "_")
             if "Optris-IP-640" in device_name:
-                instrument = deepcopy(template_ir_cam)
-                instrument["section"]["quantities"]["ir_camera"]["type"] = f"../upload/raw/{device_name}.archive.yaml#IR_camera"
-                nomad_dict["definitions"]["sections"]["MeltCzochralski"]["sub_sections"]["instrumentation"]["section"]["sub_sections"].update(
-                    {nomad_name: instrument}
+                nomad_dict["definitions"]["sections"]["MeltCzochralski"]["sub_sections"]["instrumentation"]["section"]["quantities"].update(
+                    {nomad_name: {"type": f"../upload/raw/{device_name}.archive.yaml#IR_camera"}}
                 )
-                data["instrumentation"][nomad_name] = {
-                    "ir_camera": f"../upload/raw/{device_name}.archive.yaml#data"
-                }
+                data["instrumentation"][nomad_name] = f"../upload/raw/{device_name}.archive.yaml#data"
             elif "Basler" in device_name:
-                instrument = deepcopy(template_camera)
-                instrument["section"]["quantities"]["camera"]["type"] = f"../upload/raw/{device_name}.archive.yaml#camera"
-                nomad_dict["definitions"]["sections"]["MeltCzochralski"]["sub_sections"]["instrumentation"]["section"]["sub_sections"].update(
-                    {nomad_name: instrument}
+                nomad_dict["definitions"]["sections"]["MeltCzochralski"]["sub_sections"]["instrumentation"]["section"]["quantities"].update(
+                    {nomad_name: {"type": f"../upload/raw/{device_name}.archive.yaml#camera"}}
                 )
-                data["instrumentation"][nomad_name] = {
-                    "camera": f"../upload/raw/{device_name}.archive.yaml#data"
-                }
+                data["instrumentation"][nomad_name] = f"../upload/raw/{device_name}.archive.yaml#data"
             else:
-                instrument = deepcopy(template_sensor)
-                instrument["section"]["quantities"]["sensors_list"]["type"] = f"../upload/raw/{device_name}.archive.yaml#Sensors_list"
-                nomad_dict["definitions"]["sections"]["MeltCzochralski"]["sub_sections"]["instrumentation"]["section"]["sub_sections"].update(
-                    {nomad_name: instrument}
+                nomad_dict["definitions"]["sections"]["MeltCzochralski"]["sub_sections"]["instrumentation"]["section"]["quantities"].update(
+                    {nomad_name: {"type": f"../upload/raw/{device_name}.archive.yaml#Sensors_list"}}
                 )
-                data["instrumentation"][nomad_name] = {
-                    "sensors_list": f"../upload/raw/{device_name}.archive.yaml#data"
-                }
+                data["instrumentation"][nomad_name] = f"../upload/raw/{device_name}.archive.yaml#data"
         
             nomad_dict.update({"data": data})
             with open(f"{self.directory}/multilog_eln.archive.yaml", "w", encoding="utf-8") as f:

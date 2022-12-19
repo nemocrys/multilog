@@ -118,13 +118,6 @@ class ProcessConditionLogger:
             definitions["sections"]["Sensors_list"]["sub_sections"].update(
                 {sensor_name_nomad: sensor_schema}
             )
-            definitions["sections"]["Sensors_list"]["m_annotations"]["plot"].append(
-                {
-                    "label": f"{sensor_name_nomad} over time",
-                    "x": "value_timestamp_rel",
-                    "y": [f"{sensor_name_nomad}/value_log"],
-                }
-            )
         nomad_dict = {
             "definitions": definitions,
             "data": data,
