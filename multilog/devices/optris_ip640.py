@@ -41,13 +41,20 @@ class OptrisIP640:
         logger.info(f"{self.name} - transmissivity {self.transmissivity}")
         self.t_ambient = config["T-ambient"]
         logger.info(f"{self.name} - T-ambient {self.t_ambient}")
+        if "formats-path" in config:
+            formats_path = config["formats-path"]
+        else:
+            formats_path = "/usr/share/libirimager"
+        if "cali-path" in config:
+            cali_path = config["cali-path"]
+        else:
+            cali_path = "/usr/share/libirimager/cali"
         xml = f"""<?xml version="1.0" encoding="UTF-8"?>
 <imager xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
 <serial>{config['serial-number']}</serial>   <!-- Provide serial number, if you attach more than one camera -->
 <videoformatindex>0</videoformatindex> <!-- index of the used video format (USB endpoint) -->
-<formatspath>/usr/share/libirimager</formatspath>
-<calipath>/usr/share/libirimager/cali</calipath>
-<dppath>/root/.irimager/Cali</dppath>
+<formatspath>{formats_path}</formatspath>
+<calipath>{cali_path}</calipath>
 <!-- Uncomment the following lines to specify user-defined parameters for the desired optic
     and temperature range. Be aware to specify meaningful parameters.
     See documentation for further information: http://evocortex.com/libirimager2/html/index.html
@@ -77,16 +84,11 @@ class OptrisIP640:
         self.xml_file = f"{xml_dir}/{config['serial-number']}.xml"
         with open(self.xml_file, "w", encoding="utf-8") as f:
             f.write(xml)
-        try:
-            optris.usb_init(
-                self.xml_file
-            )  # This often fails on the first attempt, therefore just repeat in case of an error.
-        except Exception as e:
-            print(
-                f"Couldn't setup OptrisIP64.\n{traceback.format_exc()}\nTrying again..."
-            )
-            logging.error(traceback.format_exc())
-            optris.usb_init(self.xml_file)
+        if "library_path" in config:
+            optris.load_DLL(config["library_path"])
+        else:
+            optris.load_DLL(None)        
+        optris.usb_init(self.xml_file)
         optris.set_radiation_parameters(
             self.emissivity, self.transmissivity, self.t_ambient
         )

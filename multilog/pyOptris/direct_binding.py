@@ -1,7 +1,8 @@
-import sys
 import ctypes
-from typing import Tuple
+import sys
 from enum import Enum
+from typing import Optional, Tuple
+
 import numpy as np
 
 DEFAULT_WIN_PATH = "..//..//irDirectSDK//sdk//x64//libirimager.dll"
@@ -9,19 +10,16 @@ DEFAULT_LINUX_PATH = "/usr/lib/libirdirectsdk.so"
 lib = None
 
 # Function to load the DLL accordingly to the OS
-def load_DLL(dll_path: str):
+def load_DLL(dll_path: str) -> None:
     global lib
     if sys.platform == "linux":
         path = dll_path if dll_path is not None else DEFAULT_LINUX_PATH
-        lib = ctypes.CDLL(DEFAULT_LINUX_PATH)
+        lib = ctypes.CDLL(path)
 
     elif sys.platform == "win32":
         path = dll_path if dll_path is not None else DEFAULT_WIN_PATH
         lib = ctypes.CDLL(path)
 
-
-# Load DLL
-load_DLL(None)
 
 #
 # @brief Initializes an IRImager instance connected to this computer via USB
@@ -32,7 +30,9 @@ load_DLL(None)
 #
 # __IRDIRECTSDK_API__ int evo_irimager_usb_init(const char* xml_config, const char* formats_def, const char* log_file);
 #
-def usb_init(xml_config: str, formats_def: str = None, log_file: str = None) -> int:
+def usb_init(
+    xml_config: str, formats_def: Optional[str] = None, log_file: Optional[str] = None
+) -> int:
     return lib.evo_irimager_usb_init(
         xml_config.encode(),
         None if formats_def is None else formats_def.encode(),
@@ -149,15 +149,19 @@ def get_palette_image(width: int, height: int) -> np.ndarray:
 #
 # __IRDIRECTSDK_API__ int evo_irimager_get_thermal_palette_image(int w_t, int h_t, unsigned short* data_t, int w_p, int h_p, unsigned char* data_p );
 #
-def get_thermal_palette_image(width: int, height: int) -> Tuple[int, int]:
-    w = ctypes.byref(ctypes.c_int(width))
-    h = ctypes.byref(ctypes.c_int(height))
-    thermalData = np.empty((height, width), dtype=np.uint16)
-    paletteData = np.empty((height, width, 3), dtype=np.uint8)
+def get_thermal_palette_image(
+    t_width: int, t_height: int, p_width: int, p_height
+) -> Tuple[np.ndarray, np.ndarray]:
+    t_w = ctypes.byref(ctypes.c_int(t_width))
+    t_h = ctypes.byref(ctypes.c_int(t_height))
+    p_w = ctypes.byref(ctypes.c_int(p_width))
+    p_h = ctypes.byref(ctypes.c_int(p_height))
+    thermalData = np.empty((t_height, t_width), dtype=np.uint16)
+    paletteData = np.empty((p_height, p_width, 3), dtype=np.uint8)
     thermalDataPointer = thermalData.ctypes.data_as(ctypes.POINTER(ctypes.c_ushort))
     paletteDataPointer = paletteData.ctypes.data_as(ctypes.POINTER(ctypes.c_ubyte))
     _ = lib.evo_irimager_get_thermal_palette_image(
-        w, h, thermalDataPointer, w, h, paletteDataPointer
+        t_w, t_h, thermalDataPointer, p_w, p_h, paletteDataPointer
     )
     return (thermalData, paletteData)
 
@@ -197,7 +201,7 @@ class ColouringPalette(Enum):
 
 
 def set_palette(colouringPalette: ColouringPalette) -> int:
-    return lib.evo_irimager_set_palette(colouringPalette)
+    return lib.evo_irimager_set_palette(colouringPalette.value)
 
 
 #
@@ -220,7 +224,7 @@ class PaletteScalingMethod(Enum):
 
 
 def set_palette_scale(paletteScalingMethod: PaletteScalingMethod) -> int:
-    return lib.evo_irimager_set_palette_scale(paletteScalingMethod)
+    return lib.evo_irimager_set_palette_scale(paletteScalingMethod.value)
 
 
 #
@@ -236,7 +240,7 @@ class ShutterMode(Enum):
 
 
 def set_shutter_mode(shutterMode: ShutterMode) -> int:
-    return lib.evo_irimager_set_shutter_mode(shutterMode)
+    return lib.evo_irimager_set_shutter_mode(shutterMode.value)
 
 
 #
