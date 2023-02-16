@@ -311,4 +311,7 @@ devices:
     emissivity: 0.95
     transmissivity: 1.0
     T-ambient: -1000  # Ambient temperature, setting invalid values (below -273,15 degrees) forces the library to take its own measurement values.  # TODO what does that mean?
+    # library_path: C:/irDirectSDK/sdk/x64/libirimager.dll # Custom path to dll / so. Defaults to "/usr/lib/libirdirectsdk.so"
+    # formats-path: C:/irDirectSDK  # Custom path to Formats.def. Defaults to "/usr/share/libirimager"
+    # cali-path:  C:/irDirectSDK/cali # Custom path to calibration files. Defaults to "/usr/share/libirimager/cali"
     # comment: your comment for nomad ELN
