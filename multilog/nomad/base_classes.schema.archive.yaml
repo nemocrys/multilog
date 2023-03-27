@@ -106,7 +106,7 @@ definitions:
         execution and that was acting on inputs to produce outputs.
       base_section: '#/ElnBaseSection'
       m_annotations:
-        eln: dict()
+        eln:
       sub_sections:
         inputs:
           repeats: True
@@ -673,7 +673,6 @@ definitions:
     Geometry:
       m_annotations:
         eln:
-          dict()
       sub_sections:
         parallelepiped:
           section:
