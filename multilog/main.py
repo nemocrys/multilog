@@ -314,13 +314,17 @@ class Controller(QObject):
         with open("./multilog/nomad/archive_template_main.yml") as f:
             nomad_dict = yaml.safe_load(f)
         data = nomad_dict.pop("data")
-        multilog_version = (
-            subprocess.check_output(
-                ["git", "describe", "--tags", "--dirty", "--always"]
+        try:
+            multilog_version = (
+                subprocess.check_output(
+                    ["git", "describe", "--tags", "--dirty", "--always"]
+                )
+                .strip()
+                .decode("utf-8")
             )
-            .strip()
-            .decode("utf-8")
-        )
+        except FileNotFoundError:
+            logger.warning("Unable to determine multilog version.", exc_info=True)
+            multilog_version = "unknown"
         data["timestamp"] = datetime.datetime.now(datetime.timezone.utc).astimezone().isoformat(timespec='milliseconds').replace('T', ' ')
         data["tasks"][0].update(
             {
@@ -357,13 +361,17 @@ class Controller(QObject):
         """Write a csv file with information about multilog version,
         python version and operating system.
         """
-        multilog_version = (
-            subprocess.check_output(
-                ["git", "describe", "--tags", "--dirty", "--always"]
+        try:
+            multilog_version = (
+                subprocess.check_output(
+                    ["git", "describe", "--tags", "--dirty", "--always"]
+                )
+                .strip()
+                .decode("utf-8")
             )
-            .strip()
-            .decode("utf-8")
-        )
+        except FileNotFoundError:
+            logger.warning("Unable to determine multilog version.", exc_info=True)
+            multilog_version = "unknown"
         metadata = f"multilog version,python version,system information,\n"
         metadata += f"{multilog_version},{platform.python_version()},{str(platform.uname()).replace(',',';')},\n"
         with open(f"{self.directory}/config.yml", "w", encoding="utf-8") as f:
