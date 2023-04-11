@@ -56,13 +56,17 @@ class ProcessConditionLogger:
         self.protocol_filename = f"{directory}/protocol_{self.name}.md"
         with open(self.protocol_filename, "w", encoding="utf-8") as f:
             f.write("# Multilog protocol\n\n")
-            multilog_version = (
-                subprocess.check_output(
-                    ["git", "describe", "--tags", "--dirty", "--always"]
+            try:
+                multilog_version = (
+                    subprocess.check_output(
+                        ["git", "describe", "--tags", "--dirty", "--always"]
+                    )
+                    .strip()
+                    .decode("utf-8")
                 )
-                .strip()
-                .decode("utf-8")
-            )
+            except FileNotFoundError:
+                logger.warning("Unable to determine multilog version.", exc_info=True)
+                multilog_version = "unknown"
             f.write(f"This is multilog version {multilog_version}.\n")
             f.write(
                 f"Logging stated at {datetime.datetime.now():%d.%m.%Y, %H:%M:%S}.\n\n"
