@@ -148,9 +148,13 @@ For the discord bot there are the following additional dependencies:
 
 - pyoptris and dependencies installed according to https://github.com/nemocrys/pyOptris/blob/dev/README.md
 
+### Logging of own version
+
+- git (will be called as a subprocess if available)
+
 ## NOMAD support
 
-NOMAD support and the option to uploade measurement data to [NOMAD](https://nomad-lab.eu/) is under implementation. Currently, various yaml-files containing a machine-readable description of the measurement data are generated.
+NOMAD support and the option to upload measurement data to [NOMAD](https://nomad-lab.eu/) is under implementation. Currently, various yaml-files containing a machine-readable description of the measurement data are generated.
 
 ## Documentation
 
