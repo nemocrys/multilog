@@ -83,7 +83,7 @@ devices:
       parity: N
       timeout: 2.0
     settings:
-      nplc: 0.5
+      nplc: 12  # nplc of all DC measurements, reduce this for higher sampling rates!
       lsync: True  # line sync for all channels
       ocom: True  # offset compensation for all channels
       azer: False  # automatic zeroing for all channels
