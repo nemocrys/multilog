@@ -70,13 +70,12 @@ class BalserDevice:
         """
         self._device.Open()
         self._device.StartGrabbing(pylon.GrabStrategy_LatestImageOnly)
-        grab = self._device.RetrieveResult(self._timeout, pylon.TimeoutHandling_Return)
-        if grab and grab.GrabSucceeded():
-            image = self._converter.Convert(grab).GetArray()
-        else:
-            raise RuntimeError("Image grabbing failed.")
-        grab.Release()
-        self._device.StopGrabbing()
+        with self._device.RetrieveResult(self._timeout, pylon.TimeoutHandling_Return) as grab:
+            if grab and grab.GrabSucceeded():
+                image = self._converter.Convert(grab).GetArray()
+            else:
+                raise RuntimeError("Image grabbing failed.")
+            self._device.StopGrabbing()
         self._device.Close()
         return image
 
