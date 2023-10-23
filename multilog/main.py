@@ -3,7 +3,7 @@ communication between device and visualization and manages the sampling
 loop."""
 from copy import deepcopy
 import shutil
-from PyQt5.QtWidgets import QApplication
+from PyQt5.QtWidgets import QApplication, QMessageBox
 from PyQt5.QtCore import QTimer, QThread, QObject, pyqtSignal
 import numpy as np
 import datetime
@@ -261,6 +261,16 @@ class Controller(QObject):
         logger.info("Stop updating.")
         self.timer_update_main.stop()
         time.sleep(1)  # to finish running update jobs (running in separate threads)
+        if "IFM-flowmeter" in self.devices:
+            logger.info("Checking if water flow greater zero.")
+            for sensor, flow in self.devices["IFM-flowmeter"].last_sampling["Flow"].items():
+                if flow == 0:
+                    QMessageBox.warning(
+                        self.main_window,
+                        "Warning!",
+                        f"No cooling water flow at sensor {sensor}.",
+                        buttons=QMessageBox.Ok,
+                    )             
         logger.info("Start sampling.")
         self.init_output_files()
         self.start_time = datetime.datetime.now(datetime.timezone.utc).astimezone()
