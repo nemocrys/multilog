@@ -148,6 +148,7 @@ For the discord bot there are the following additional dependencies:
 
 - pypylon
 - Pillow
+- imagio
 
 #### Optris-IP-640 IR camera
 
