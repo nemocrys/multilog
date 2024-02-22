@@ -2,7 +2,6 @@ import datetime
 import logging
 import os
 import shutil
-from imageio import imwrite
 
 logger = logging.getLogger(__name__)
 try:
@@ -13,6 +12,10 @@ try:
     from PIL import Image
 except Exception as e:
     logger.warning("Could not import PIL.", exc_info=True)
+try:
+    from imageio import imwrite
+except Exception as e:
+    logger.warning("Could not import imageio.", exc_info=True)
 
 
 class BaslerCamera:
