@@ -1,7 +1,7 @@
 settings:
   dt-main: 2000  # sampling time step [ms]
-  dt-camera: 5000  # sampling time step [ms]
-  dt-camera-update: 50  # frame update time step [ms]
+  dt-camera: 250  # sampling time step [ms]            # Will  be used only after  clicking "Start", all images get saved
+  dt-camera-update: 250  # frame update time step [ms] # Will  be used only before clicking "Start", no  images get saved
   dt-init: 1000  # sampling time step before recording is started [ms]
 
 logging:
@@ -300,8 +300,9 @@ devices:
   Basler:
     device-number: 0
     exposure-time: 10.e+3  # µs
-    frame-rate: 32  # device-specific, used for configuration of camera only
+    frame-rate: 4  # device-specific, used for configuration of camera only
     timeout: 1000  # ms
+    file-format: jpeg #jpeg or tiff, PNG WILL NOT WORK!
     # comment: your comment for nomad ELN
   Optris-IP-640:
     serial-number: 20112117

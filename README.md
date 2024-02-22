@@ -107,6 +107,11 @@ The camera is connected using ethernet. Configuration of:
 - exposure time
 - framerate
 - timeout
+- Output File Format (tiff: lossless but 15MB per picture or jpeg: with losses but <1MB per picture.)
+
+A Script to convert the .tiff data to .png data (also lossless but only 5MB per picture) can be found in the postprocessing folder.
+
+__If two Cameras are conected the Framerate will only be half of the set Framerate!__
 
 #### Optris-IP-640 IR camera
 
@@ -143,6 +148,7 @@ For the discord bot there are the following additional dependencies:
 
 - pypylon
 - Pillow
+- imagio
 
 #### Optris-IP-640 IR camera
 

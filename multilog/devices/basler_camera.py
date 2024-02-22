@@ -2,7 +2,7 @@ import datetime
 import logging
 import os
 import shutil
-
+from imageio import imwrite
 
 logger = logging.getLogger(__name__)
 try:
@@ -31,6 +31,7 @@ class BaslerCamera:
         self.name = name
         self._timeout = config["timeout"]
         device_number = config["device-number"]
+        self.fileformat = config["file-format"]
         tl_factory = pylon.TlFactory.GetInstance()
         self.device_name = tl_factory.EnumerateDevices()[
             device_number
@@ -40,7 +41,7 @@ class BaslerCamera:
             tl_factory.CreateDevice(tl_factory.EnumerateDevices()[device_number])
         )
         self._converter = pylon.ImageFormatConverter()
-        self._converter.OutputPixelFormat = pylon.PixelType_BGR8packed
+        self._converter.OutputPixelFormat = pylon.PixelType_RGB8packed # change B and R if colors are wrong
         self._converter.OutputBitAlignment = pylon.OutputBitAlignment_MsbAligned
         self._name = tl_factory.EnumerateDevices()[device_number].GetFriendlyName()
         self._model_number = self._name.split(" ")[1]
@@ -82,7 +83,7 @@ class BaslerCamera:
             numpy.array: image.
         """
         grab = self._device.RetrieveResult(self._timeout, pylon.TimeoutHandling_Return)
-        if grab and grab.GrabSucceeded():
+        if grab.GrabSucceeded():
             image = self._converter.Convert(grab).GetArray()
         else:
             raise RuntimeError("Image grabbing failed.")
@@ -131,19 +132,23 @@ class BaslerCamera:
             time_rel (float): relative time of measurement.
             sampling (numpy.array): image as returned from sample()
         """
+        timeRightNow = datetime.datetime.now(datetime.timezone.utc).astimezone() # this is bad coding, but the code has to be fast so I have to reuse this timestamp.
+
         timediff = (
-            datetime.datetime.now(datetime.timezone.utc).astimezone() - time_abs
+            timeRightNow - time_abs
         ).total_seconds()
         if timediff > 1:
             logger.warning(
                 f"{self.name} save_measurement: time difference between event and saving of {timediff} seconds for samplint timestep {time_abs.isoformat(timespec='milliseconds').replace('T', ' ')} - {time_rel}"
             )
+        # saving the data:
         self.meas_data = sampling
-        img_name = f"img_{self.image_counter:06}.jpg"
-        Image.fromarray(sampling).convert("RGB").save(f"{self.directory}/{img_name}")
+        img_name = f"img_{self.image_counter:06}.{self.fileformat}"
+        imwrite(f"{self.directory}/{img_name}", sampling)
+        
         with open(f"{self.directory}/_images.csv", "a", encoding="utf-8") as f:
             f.write(
-                f"{time_abs.isoformat(timespec='milliseconds').replace('T', ' ')},{time_rel},{img_name},\n"
+                f"{timeRightNow.isoformat(timespec='milliseconds').replace('T', ' ')},{time_rel},{img_name},\n"
             )
         with open(f"{self.base_directory}/{self.name}.archive.yaml", "a") as f:  # todo
             f.write(f"  - name: {img_name}\n")
