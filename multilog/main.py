@@ -206,7 +206,12 @@ class Controller(QObject):
                 raise ValueError(f"unknown device {device_name} in config file.")
 
             self.devices.update({device_name: device})
-            self.main_window.add_tab(widget, device_name)
+            
+            if "Basler" in device_name:
+                self.main_window.add_tab(widget, f"{device_name} ({device._model_number})") # widget name is the name of the Basler camera model number, not just the name in the config
+            else:
+                self.main_window.add_tab(widget, device_name) # config-name for all other devices except Basler cameras
+
             self.tabs.update({device_name: widget})
 
         # setup threads
