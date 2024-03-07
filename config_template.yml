@@ -1,7 +1,7 @@
 settings:
   dt-main: 2000  # sampling time step [ms]
-  dt-camera: 250  # sampling time step [ms]            # Will  be used only after  clicking "Start", all images get saved
-  dt-camera-update: 250  # frame update time step [ms] # Will  be used only before clicking "Start", no  images get saved
+  dt-camera: 250  # sampling time step [ms]            # Will  be used only after  clicking "Start", all images get saved, min: 150 ms
+  dt-camera-update: 250  # frame update time step [ms] # Will  be used only before clicking "Start", no  images get saved, min: 150 ms
   dt-init: 1000  # sampling time step before recording is started [ms]
 
 logging:
@@ -299,8 +299,8 @@ devices:
   #     30.0: 7
   Basler:
     device-number: 0
-    exposure-time: 10.e+3  # µs
-    frame-rate: 4  # device-specific, used for configuration of camera only
+    exposure-time: 40000  # µs, Recomended: 40000 for acA2440, 5000 for acA2500
+    frame-rate: 1000  # device-specific, used for configuration of camera only, Recomended: 1000
     timeout: 1000  # ms
     file-format: jpeg #jpeg or tiff, PNG WILL NOT WORK!
     # comment: your comment for nomad ELN
