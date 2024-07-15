@@ -115,6 +115,9 @@ class Controller(QObject):
         from .devices.process_condition_logger import ProcessConditionLogger
         from .devices.pyrometer_array_lumasense import PyrometerArrayLumasense
         from .devices.pyrometer_lumasense import PyrometerLumasense
+        from .devices.vifcon_achsen import Vifcon_achsen
+        from .devices.vifcon_gase import Vifcon_gase
+        from .devices.vifcon_generator import Vifcon_generator
 
         from .view.main_window import MainWindow
         from .view.daq6510 import Daq6510Widget
@@ -125,6 +128,9 @@ class Controller(QObject):
         from .view.process_condition_logger import ProcessConditionLoggerWidget
         from .view.pyrometer_array_lumasense import PyrometerArrayLumasenseWidget
         from .view.pyrometer_lumasense import PyrometerLumasenseWidget
+        from .view.vifcon_achsen import Vifcon_achsenWidget
+        from .view.vifcon_gase import Vifcon_gaseWidget
+        from .view.vifcon_generator import Vifcon_generatorWidget
 
         self.sampling_started = False  # this will to be true once "start" was clicked
 
@@ -199,6 +205,15 @@ class Controller(QObject):
                     self.config["devices"][device_name], device_name
                 )
                 widget = ProcessConditionLoggerWidget(device)
+            elif "Vifcon_achsen" in device_name:
+                device = Vifcon_achsen(self.config["devices"][device_name], device_name)
+                widget = Vifcon_achsenWidget(device)
+            elif "Vifcon_gase" in device_name:
+                device = Vifcon_gase(self.config["devices"][device_name], device_name)
+                widget = Vifcon_gaseWidget(device)
+            elif "Vifcon_generator" in device_name:
+                device = Vifcon_generator(self.config["devices"][device_name], device_name)
+                widget = Vifcon_generatorWidget(device)
             #######################
             # add new devices here!
             #######################
@@ -206,7 +221,12 @@ class Controller(QObject):
                 raise ValueError(f"unknown device {device_name} in config file.")
 
             self.devices.update({device_name: device})
-            self.main_window.add_tab(widget, device_name)
+
+            if "Basler" in device_name:
+                self.main_window.add_tab(widget, f"{device_name} ({device._model_number})") # widget name is the name of the Basler camera model number, not just the name in the config
+            else:
+                self.main_window.add_tab(widget, device_name) # config-name for all other devices except Basler cameras
+
             self.tabs.update({device_name: widget})
 
         # setup threads

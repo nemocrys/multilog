@@ -27,7 +27,12 @@ class EurothermWidget(QWidget):
         self.layout.addWidget(self.tab_widget)
         self.tab_widget.setStyleSheet("QTabBar {font-size: 14pt; color: blue;}")
 
-        self.temperature_widget = PlotWidget(["Temperature"], "Temperature", "°C")
+        self.conectionType = eurotherm.getConectionType()
+
+        if self.conectionType == "serial":
+            self.temperature_widget = PlotWidget(["Temperature"], "Temperature", "°C")
+        elif self.conectionType == "tcp":
+            self.temperature_widget = PlotWidget(["Temperature-actual", "Temperature-target"], "Temperature", "°C")
         self.tab_widget.addTab(self.temperature_widget, "Temperature")
 
         self.op_widget = PlotWidget(["Operating point"], "Operating point", "-")
@@ -40,7 +45,11 @@ class EurothermWidget(QWidget):
         Args:
             sampling (dict): {sampling name: value}
         """
-        self.temperature_widget.set_label("Temperature", sampling["Temperature"])
+        if self.conectionType == "serial":
+            self.temperature_widget.set_label("Temperature", sampling["Temperature"])
+        elif self.conectionType == "tcp":
+            self.temperature_widget.set_label("Temperature-actual", sampling["IWT"])
+            self.temperature_widget.set_label("Temperature-target", sampling["SWT"])
         self.op_widget.set_label("Operating point", sampling["Operating point"])
 
     def set_measurement_data(self, rel_time, meas_data):
@@ -51,9 +60,9 @@ class EurothermWidget(QWidget):
             rel_time (list): relative time of measurement data.
             meas_data (dict): {sampling name: measurement time series}
         """
-        self.temperature_widget.set_data(
-            "Temperature", rel_time, meas_data["Temperature"]
-        )
-        self.op_widget.set_data(
-            "Operating point", rel_time, meas_data["Operating point"]
-        )
+        if self.conectionType == "serial":
+            self.temperature_widget.set_data("Temperature", rel_time, meas_data["Temperature"])
+        elif self.conectionType == "tcp":
+            self.temperature_widget.set_data("Temperature-actual", rel_time, meas_data["IWT"])
+            self.temperature_widget.set_data("Temperature-target", rel_time, meas_data["SWT"])
+        self.op_widget.set_data("Operating point", rel_time, meas_data["Operating point"])

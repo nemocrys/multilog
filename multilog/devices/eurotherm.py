@@ -4,6 +4,8 @@ import logging
 import numpy as np
 from serial import Serial, SerialException
 import yaml
+import socket
+import json
 
 logger = logging.getLogger(__name__)
 
@@ -30,16 +32,33 @@ class Eurotherm:
         logger.info(f"Initializing Eurotherm device '{name}'")
         self.config = config
         self.name = name
-        try:
-            self.serial = Serial(**config["serial-interface"])
-        except SerialException as e:
-            logger.exception(f"Connection to {self.name} not possible.")
-            self.serial = SerialMock()
+        
+        if self.config.get("serial-interface") != None: # serial conection
+            self.conectionType = "serial"
+            self.read_temperature = "\x040000PV\x05"
+            self.read_op          = "\x040000OP\x05"
+            self.meas_data = {"Temperature": [], "Operating point": []}
+            try:
+                self.serial = Serial(**config["serial-interface"])
+            except SerialException as e:
+                logger.exception(f"Connection to {self.name} not possible.")
+                self.serial = SerialMock()
+                
+        elif self.config.get("tcp-interface") != None: # tcp conection
+            self.conectionType = "tcp"
+            self.vifconIP      = config["tcp-interface"]["IP"]
+            self.vifconPort    = config["tcp-interface"]["Port"]
+            self.meas_data = {"IWT": [], "SWT": [], "Operating point": []}
+            try:
+                self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                self.s.connect((self.vifconIP, self.vifconPort))
+                logger.info(f"{self.name} connected to VIFCON")
+            except Exception as e:
+                logger.exception(f"Connection to {self.name} not possible.")
 
-        self.read_temperature = "\x040000PV\x05"
-        self.read_op = "\x040000OP\x05"
+        
 
-        self.meas_data = {"Temperature": [], "Operating point": []}
+        
 
     def sample(self):
         """Read sampling form device.
@@ -47,16 +66,34 @@ class Eurotherm:
         Returns:
             dict: {sensor name: measurement value}
         """
-        try:
-            self.serial.write(self.read_temperature.encode())
-            temperature = float(self.serial.readline().decode()[3:-2])
-            self.serial.write(self.read_op.encode())
-            op = float(self.serial.readline().decode()[3:-2])
-        except Exception as e:
-            logger.exception(f"Could not sample Eurotherm.")
-            temperature = np.nan
-            op = np.nan
-        return {"Temperature": temperature, "Operating point": op}
+        if self.conectionType == "serial":
+            try:
+                self.serial.write(self.read_temperature.encode())
+                temperature = float(self.serial.readline().decode()[3:-2])
+                self.serial.write(self.read_op.encode())
+                op = float(self.serial.readline().decode()[3:-2])
+            except Exception as e:
+                logger.exception(f"Could not sample Eurotherm.")
+                temperature = np.nan
+                op = np.nan
+            return {"Temperature": temperature, "Operating point": op}
+                
+        elif self.conectionType == "tcp":
+            try:
+                self.s.send(bytes(self.name, 'UTF-8')) # send trigger
+                received = self.s.recv(1024)
+                received = received.decode("utf-8")
+                data = json.loads(received)
+                IWT = data["IWT"]
+                SWT = data["SWT"]
+                op  = data["IWOp"]
+            except Exception as e:
+                logger.exception(f"Could not sample {self.name}.")
+                IWT = np.nan
+                SWT = np.nan
+                op  = np.nan
+            return {"IWT": IWT, "SWT": SWT, "Operating point": op}
+        
 
     def save_measurement(self, time_abs, time_rel, sampling):
         """Write measurement data to file.
@@ -73,9 +110,16 @@ class Eurotherm:
             logger.warning(
                 f"{self.name} save_measurement: time difference between event and saving of {timediff} seconds for samplint timestep {time_abs.isoformat(timespec='milliseconds').replace('T', ' ')} - {time_rel}"
             )
-        self.meas_data["Temperature"].append(sampling["Temperature"])
+            
         self.meas_data["Operating point"].append(sampling["Operating point"])
-        line = f"{time_abs.isoformat(timespec='milliseconds').replace('T', ' ')},{time_rel},{sampling['Temperature']},{sampling['Operating point']},\n"
+        if self.conectionType == "serial":
+            self.meas_data["Temperature"].append(sampling["Temperature"])
+            line = f"{time_abs.isoformat(timespec='milliseconds').replace('T', ' ')},{time_rel},{sampling['Temperature']},{sampling['Operating point']},\n"
+        elif self.conectionType == "tcp":
+            self.meas_data["IWT"].append(sampling["IWT"])
+            self.meas_data["SWT"].append(sampling["SWT"])
+            line = f"{time_abs.isoformat(timespec='milliseconds').replace('T', ' ')},{time_rel},{sampling['IWT']},{sampling['SWT']},{sampling['Operating point']},\n"
+        
         with open(self.filename, "a", encoding="utf-8") as f:
             f.write(line)
 
@@ -86,8 +130,14 @@ class Eurotherm:
             directory (str, optional): Output directory. Defaults to "./".
         """
         self.filename = f"{directory}/{self.name}.csv"
-        units = "# datetime,s,DEG C,-,\n"
-        header = "time_abs,time_rel,Temperature,Operating point,\n"
+        
+        if self.conectionType == "serial":
+            units = "# datetime,s,DEG C,-,\n"
+            header = "time_abs,time_rel,Temperature,Operating point,\n"
+        elif self.conectionType == "tcp":
+            units = "# datetime,s,DEG C,DEG C,-,\n"
+            header = "time_abs,time_rel,IWT,SWT,Operating point,\n"
+            
         with open(self.filename, "w", encoding="utf-8") as f:
             f.write(units)
             f.write(header)
@@ -142,3 +192,6 @@ class Eurotherm:
         }
         with open(f"{directory}/{self.name}.archive.yaml", "w", encoding="utf-8") as f:
             yaml.safe_dump(nomad_dict, f, sort_keys=False)
+
+    def getConectionType(self):
+        return self.conectionType
