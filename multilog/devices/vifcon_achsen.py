@@ -20,54 +20,67 @@ class Vifcon_achsen:
         """
 
         logger.info(f"Initializing vifcon device '{name}'")
+        
         self.config = config
         self.name = name
         self.vifconIP = config["IP"]
-        self.vifconPort = config["Port"]
-        try:
-            self.hub = config["Axis"]["Hub"]
-        except:
-            self.hub = []
-            logger.info(f"{self.name} No HUB Axis found in Config")
-        try:
-            self.rot = config["Axis"]["Rot"]
-        except:
-            self.rot = []
-            logger.info(f"{self.name} No ROT Axis found in Config")
-        try:
-            self.pi  = config["Axis"]["Pi"]
-        except:
-            self.pi = []
-            logger.info(f"{self.name} No PI Axis found in Config")
-        # TCP STUFF
-        i=0
+
+        # lists
+        self.hub = []
+        self.rot = []
+        self.pi  = []
         self.connectionList = []
-        
+        sleepTime = 0.1 # pause needed between conections, otherwise connection will fail!
+
         try:
-            for axis in self.hub:
-                s = socket.socket()
-                s.connect((self.vifconIP, self.vifconPort+i))
-                self.connectionList.append(s)
-                logger.debug(f"{axis} connected to VIFCON")
-                i=i+1
-                time.sleep(0.1)
-            for axis in self.rot:
-                s = socket.socket()
-                s.connect((self.vifconIP, self.vifconPort+i))
-                self.connectionList.append(s)
-                logger.debug(f"{axis} connected to VIFCON")
-                i=i+1
-                time.sleep(0.1)
-            for axis in self.pi:
-                s = socket.socket()
-                s.connect((self.vifconIP, self.vifconPort+i))
-                self.connectionList.append(s)
-                logger.debug(f"{axis} connected to VIFCON")
-                i=i+1
-                time.sleep(0.1)
-            logger.info(f"{self.name} connected to VIFCON")
+            for axis in config["Axis"]:
+                axisName = config["Axis"][axis]["Name"] # get name
+                
+                if "Hub" in axisName.capitalize():
+                    try:
+                        self.hub.append(axis) # append to hub liste
+
+                        # TCP conection:
+                        s = socket.socket()
+                        s.connect((self.vifconIP,  config["Axis"][axis]["Port"]))
+                        self.connectionList.append(s)
+                        logger.debug(f"{axisName} connected to VIFCON")
+                        time.sleep(sleepTime)
+                    except Exception as e:
+                        logger.exception(f"Connection to {self.name}: {self.axisName} not possible.")
+                        time.sleep(sleepTime)
+                        
+                if "Rot" in axisName.capitalize():
+                    try:
+                        self.rot.append(axis) # append to rot liste
+
+                        # TCP conection:
+                        s = socket.socket()
+                        s.connect((self.vifconIP,  config["Axis"][axis]["Port"]))
+                        self.connectionList.append(s)
+                        logger.debug(f"{axisName} connected to VIFCON")
+                        time.sleep(sleepTime)
+                    except Exception as e:
+                        logger.exception(f"Connection to {self.name}: {self.axisName} not possible.")
+                        time.sleep(sleepTime)
+                        
+                if "Pi" in axisName.capitalize():
+                    try:
+                        self.pi.append(axis) # append to pi liste
+                        
+                        # TCP conection:
+                        s = socket.socket() 
+                        s.connect((self.vifconIP,  config["Axis"][axis]["Port"])) 
+                        self.connectionList.append(s)
+                        logger.debug(f"{axisName} connected to VIFCON")
+                        time.sleep(sleepTime)
+                    except Exception as e:
+                        logger.exception(f"Connection to {self.name}: {self.axisName} not possible.")
+                        time.sleep(sleepTime)
         except Exception as e:
-            logger.exception(f"Connection to {self.name} not possible.")
+            logger.exception(f"{self.name}: has no Axis definded.")
+            
+                    
         # Build measData
         self.meas_data = {}
         for axis in self.hub:
