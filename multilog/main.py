@@ -87,6 +87,7 @@ class Controller(QObject):
     signal_sample_main = pyqtSignal(dict)  # sample, update view and save
     signal_update_camera = pyqtSignal()  # sample and update view
     signal_sample_camera = pyqtSignal(dict)  # sample, update view and save
+    signal_Vifcon     = pyqtSignal() 
 
     def __init__(self, config, output_dir) -> None:
         """Initialize and run multilog.
@@ -115,6 +116,11 @@ class Controller(QObject):
         from .devices.process_condition_logger import ProcessConditionLogger
         from .devices.pyrometer_array_lumasense import PyrometerArrayLumasense
         from .devices.pyrometer_lumasense import PyrometerLumasense
+        from .devices.vifcon_achsen import Vifcon_achsen
+        from .devices.vifcon_gase import Vifcon_gase
+        from .devices.vifcon_generator import Vifcon_generator
+
+        from .devices.vifcon import Vifcon
 
         from .view.main_window import MainWindow
         from .view.daq6510 import Daq6510Widget
@@ -125,6 +131,9 @@ class Controller(QObject):
         from .view.process_condition_logger import ProcessConditionLoggerWidget
         from .view.pyrometer_array_lumasense import PyrometerArrayLumasenseWidget
         from .view.pyrometer_lumasense import PyrometerLumasenseWidget
+        from .view.vifcon_achsen import Vifcon_achsenWidget
+        from .view.vifcon_gase import Vifcon_gaseWidget
+        from .view.vifcon_generator import Vifcon_generatorWidget
 
         self.sampling_started = False  # this will to be true once "start" was clicked
 
@@ -185,7 +194,6 @@ class Controller(QObject):
                 )
                 widget = PyrometerLumasenseWidget(device)
             elif "Series-600" in device_name:
-                logger.warning("Series-600 devices haven't been tested yet.")
                 device = PyrometerArrayLumasense(
                     self.config["devices"][device_name], device_name
                 )
@@ -199,6 +207,15 @@ class Controller(QObject):
                     self.config["devices"][device_name], device_name
                 )
                 widget = ProcessConditionLoggerWidget(device)
+            elif "Vifcon_achsen" in device_name:
+                device = Vifcon_achsen(self.config["devices"][device_name], device_name)
+                widget = Vifcon_achsenWidget(device)
+            elif "Vifcon_gase" in device_name:
+                device = Vifcon_gase(self.config["devices"][device_name], device_name)
+                widget = Vifcon_gaseWidget(device)
+            elif "Vifcon_generator" in device_name:
+                device = Vifcon_generator(self.config["devices"][device_name], device_name)
+                widget = Vifcon_generatorWidget(device)
             #######################
             # add new devices here!
             #######################
@@ -206,7 +223,7 @@ class Controller(QObject):
                 raise ValueError(f"unknown device {device_name} in config file.")
 
             self.devices.update({device_name: device})
-            
+
             if "Basler" in device_name:
                 self.main_window.add_tab(widget, f"{device_name} ({device._model_number})") # widget name is the name of the Basler camera model number, not just the name in the config
             else:
@@ -214,6 +231,20 @@ class Controller(QObject):
 
             self.tabs.update({device_name: widget})
 
+            ### VIFCON CONECTION
+            # Ist der Port Null, wird keine Verbindung hergestellt:
+            ip = self.config["settings"]["IP-Vifcon"]
+            trigger = []
+            port_List  = [] # Liste der Ports
+            vifconDevices = []
+            try:
+                if self.config["devices"][device_name]['Port-Vifcon'] != 0:
+                    port_List.append(self.config["devices"][device_name]['Port-Vifcon'])
+                    trigger.append(device_name)
+                    vifconDevices.append(self.devices[device_name])
+            except:
+                logger.debug(f"{self.config['devices'][device_name]} has no Vifcon Port")
+                    
         # setup threads
         logger.debug("Setting up threads")
         self.samplers = []
@@ -233,9 +264,19 @@ class Controller(QObject):
             self.samplers.append(sampler)
             self.threads.append(thread)
 
+        # Multilog Trigger Thread erstellen:
+        self.VifconNutzung = self.config['settings']['Multilog_Link']
+        if self.VifconNutzung:
+            self.LinkVifconThread = QThread()
+            self.VifconLink = Vifcon(ip, port_List, trigger,vifconDevices)
+            self.VifconLink.moveToThread(self.LinkVifconThread)
+            self.LinkVifconThread.start()
+            self.signal_Vifcon.connect(self.VifconLink.event_Loop)
+            self.signal_Vifcon.emit()
+
         # run
         for thread in self.threads:
-            thread.start()
+            thread.start()      
         self.timer_update_main.start()
         self.timer_update_camera.start()
         self.main_window.show()
@@ -288,6 +329,10 @@ class Controller(QObject):
 
     def exit(self):
         """This is executed when the exit button is clicked."""
+        self.LinkVifconThread.quit()
+        if not self.VifconLink.done:
+            self.VifconLink.ende()
+        
         logger.info("Stopping sampling")
         self.timer_update_camera.stop()
         logger.debug("Stopped timer_update_camera")

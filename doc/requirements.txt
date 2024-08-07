@@ -7,6 +7,5 @@ PyYAML
 requests
 python-dotenv
 discord
-pypylon 
 Pillow
 imageio
