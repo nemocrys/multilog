@@ -34,16 +34,31 @@ class PyrometerLumasense:
         self.device_id = config["device-id"]
         self.name = name
         self.t90_dict = config["t90-dict"]
-        try:
-            self.serial = Serial(**config["serial-interface"])
-        except SerialException as e:
-            logger.exception(f"Connection to {self.name} not possible.")
-            self.serial = SerialMock()
-        if type(self.serial) != SerialMock:
-            self.set_emissivity(config["emissivity"])
-            self.set_transmissivity(config["transmissivity"])
-            self.set_t90(config["t90"])
-        self.meas_data = []
+        self.latestSample = np.nan
+
+        if self.config.get("serial-interface") != None: # serial conection
+            self.meas_data = []
+            
+            try:
+                self.serial = Serial(**config["serial-interface"])
+            except SerialException as e:
+                logger.exception(f"Connection to {self.name} not possible.")
+                self.serial = SerialMock()
+            if type(self.serial) != SerialMock:
+                self.set_emissivity(config["emissivity"])
+                self.set_transmissivity(config["transmissivity"])
+                self.set_t90(config["t90"])
+        """        
+        if self.config.get("tcp-interface") != None: # tcp conection
+            self.conectionType = "tcp"
+            self.vifconIP      = config["tcp-interface"]["IP"]
+            self.vifconPort    = config["tcp-interface"]["Port"]
+            self.meas_data = []
+            try:
+                self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                self.s.connect((self.vifconIP, self.vifconPort))
+                logger.info(f"{self.name} connected to VIFCON")
+        """
 
     def _get_ok(self):
         """Check if command was accepted."""
@@ -129,6 +144,7 @@ class PyrometerLumasense:
         Returns:
             float: temperature reading.
         """
+        
         try:
             cmd = f"{self.device_id}ms\r"
             self.serial.write(cmd.encode())
@@ -136,7 +152,15 @@ class PyrometerLumasense:
         except Exception as e:
             logger.exception(f"Could not sample PyrometerLumasense.")
             val = np.nan
+
+        self.setLatestSample(val)
         return val
+
+    def setLatestSample(self, sampling):
+        self.latestSample = sampling
+        
+    def getLatestSample(self):
+        return self.latestSample
 
     def init_output(self, directory="./"):
         """Initialize the csv output file.

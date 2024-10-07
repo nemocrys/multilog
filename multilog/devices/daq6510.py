@@ -65,6 +65,8 @@ class Daq6510:
         self.nb_dcv = 0
         self.nb_acv = 0
 
+        self.latestSample = np.nan
+
         for channel in config["channels"]:
             self.reading_str += f"{channel},"
             sensor_type = config["channels"][channel]["type"].lower()
@@ -411,4 +413,12 @@ class Daq6510:
                 float(data[2 * i + 1]) * self.conversion_factor[sensor_name]
             )
             sampling.update({sensor_name: measurement_value})
+            
+        self.setLatestSample(sampling)
         return sampling
+
+    def setLatestSample(self, sampling):
+        self.latestSample = sampling
+        
+    def getLatestSample(self):
+        return self.latestSample

@@ -57,6 +57,7 @@ class PyrometerArrayLumasense:
                     head_number, config["sensors"][sensor]["emissivity"]
                 )
                 self.set_emissivity(head_number, config["sensors"][sensor]["t90"])
+        self.latestSample = np.nan
 
     def _get_ok(self):
         """Check if command was accepted."""
@@ -112,7 +113,16 @@ class PyrometerArrayLumasense:
                     f"Could not sample PyrometerArrayLumasense heat '{sensor}'."
                 )
                 sampling.update({sensor: np.nan})
+
+        self.setLatestSample(sampling)
         return sampling
+
+    def setLatestSample(self, sampling):
+        self.latestSample = sampling
+        
+    def getLatestSample(self):
+        return self.latestSample
+        
 
     def init_output(self, directory="./"):
         """Initialize the csv output file.
