@@ -128,7 +128,7 @@ class Vifcon(QObject):
             deviceJSON = ""
             for device in self.VifconDevices:
                 if trigger == device.name:
-                    data = device.sample() # Eigende Datenabfrage vom aktuellen Gerät.
+                    data = device.getLatestSample() # letzte gespeichertes Sample abfragen.
                     deviceJSON += json.dumps({device.name:data}) 
 
             data = bytes(deviceJSON,encoding="utf-8")       # Dict zu String zu Bianry
