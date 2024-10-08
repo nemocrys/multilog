@@ -86,7 +86,7 @@ class ImageWidget(QSplitter):
         Args:
             data (numpy.array): image
         """
-        self.image_view.setImage(data, scale=1)
+        self.image_view.setImage(data, autoRange=False)
 
     def set_cmap(self, cmap_name="turbo"):
         """Set color map for the image (if data is 2D heatmap)"""
