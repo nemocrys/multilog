@@ -174,6 +174,10 @@ class Controller(QObject):
         self.devices = {}
         self.tabs = {}
         self.cameras = []
+
+        trigger = []
+        port_List  = [] # Liste der Ports
+        vifconDevices = []
         for device_name in self.config["devices"]:
             if "DAQ-6510" in device_name:
                 device = Daq6510(self.config["devices"][device_name], device_name)
@@ -234,9 +238,9 @@ class Controller(QObject):
             ### VIFCON CONECTION
             # Ist der Port Null, wird keine Verbindung hergestellt:
             ip = self.config["settings"]["IP-Vifcon"]
-            trigger = []
-            port_List  = [] # Liste der Ports
-            vifconDevices = []
+            # trigger = []
+            # port_List  = [] # Liste der Ports
+            # vifconDevices = []
             try:
                 if self.config["devices"][device_name]['Port-Vifcon'] != 0:
                     port_List.append(self.config["devices"][device_name]['Port-Vifcon'])
