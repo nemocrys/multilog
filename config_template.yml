@@ -345,3 +345,14 @@ devices:
 #  Vifcon_generator:
 #    IP: "localhost" # as string
 #    Port: 53000
+
+  Dias-Pyrometer:  # Pyrometer
+    serial-interface:
+      port: /dev/ttyUSB1
+      baudrate: 19200
+      bytesize: 8
+      stopbits: 1
+      parity: E
+      timeout: 0.05
+    emissivity: 0.95       # 0.01 < e <= 1.0
+    transmissivity: 1.0   # 0.50 < t <= 1.0

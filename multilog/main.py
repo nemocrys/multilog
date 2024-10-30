@@ -116,6 +116,7 @@ class Controller(QObject):
         from .devices.process_condition_logger import ProcessConditionLogger
         from .devices.pyrometer_array_lumasense import PyrometerArrayLumasense
         from .devices.pyrometer_lumasense import PyrometerLumasense
+        from .devices.pyrometer_dias import PyrometerDias
         from .devices.vifcon_achsen import Vifcon_achsen
         from .devices.vifcon_gase import Vifcon_gase
         from .devices.vifcon_generator import Vifcon_generator
@@ -131,6 +132,7 @@ class Controller(QObject):
         from .view.process_condition_logger import ProcessConditionLoggerWidget
         from .view.pyrometer_array_lumasense import PyrometerArrayLumasenseWidget
         from .view.pyrometer_lumasense import PyrometerLumasenseWidget
+        from .view.pyrometer_dias import PyrometerDiasWidget
         from .view.vifcon_achsen import Vifcon_achsenWidget
         from .view.vifcon_gase import Vifcon_gaseWidget
         from .view.vifcon_generator import Vifcon_generatorWidget
@@ -216,6 +218,9 @@ class Controller(QObject):
             elif "Vifcon_generator" in device_name:
                 device = Vifcon_generator(self.config["devices"][device_name], device_name)
                 widget = Vifcon_generatorWidget(device)
+            elif "Dias" in device_name:
+                device = PyrometerDias(self.config["devices"][device_name], device_name)
+                widget = PyrometerDiasWidget(device)
             #######################
             # add new devices here!
             #######################
