@@ -12,8 +12,13 @@ logging:
   format: '%(asctime)s %(levelname)s %(name)s - %(message)s'
   filemode: a  # w: overwrite old logfile, a: append to existing logfile
   # encoding: 'utf-8'  # only available for python >= 3.9
+
+
+# skip=1 will skip the device, skip=0 will init the device
+
 devices:
   Process-Condition-Logger:
+    skip: 1
     v_pull:
       unit: mm/min
       label: Pulling velocity
@@ -76,7 +81,9 @@ devices:
       label: Comment
       # default: "Multilog measurement"
       # comment: your comment for nomad ELN
+
   DAQ-6510:
+    skip: 1
     serial-interface:
       port: /dev/ttyr00
       baudrate: 115200
@@ -159,7 +166,9 @@ devices:
       #   range: 1  # V (optional)
       #   factor: 1  # TODO
       #   # comment: your comment for nomad ELN
+
   IFM-flowmeter:
+    skip: 1
     IP: 172.18.56.199
     ports:
       1:
@@ -196,7 +205,9 @@ devices:
         - RL_Generator
         - RL_Spule_1
       tolerance: 2.5  # l/min
+
   Eurotherm1:
+    skip: 1
     # comment: your comment for nomad ELN
     serial-interface:
       port: /dev/ttyr04
@@ -208,7 +219,13 @@ devices:
     #tcp-interface:
       #IP: "localhost" # as string
       #Port: 50000
+
+---------------------------------------
+              Pyrometers 
+---------------------------------------
+
   IGA-6-23-adv:  # Pyrometer
+    skip: 1
     # comment: your comment for nomad ELN
     serial-interface:
       port: /dev/ttyr02
@@ -231,7 +248,9 @@ devices:
       1.0: 7
       3.0: 8
       10.0: 9
+
   IGA-6-23-vis:  # Pyrometer
+    skip: 1
     # comment: your comment for nomad ELN
     serial-interface:
       port: /dev/ttyUSB1
@@ -254,7 +273,9 @@ devices:
       1.0: 7
       3.0: 8
       10.0: 9
+
   IGAR-6-adv:  # Ratio pyrometer
+    skip: 1
     # comment: your comment for nomad ELN
     serial-interface:
       port: /dev/ttyUSB0
@@ -274,42 +295,63 @@ devices:
       1.0: 4
       3.0: 5
       10.0: 6
-  # Series-600:  # Pyrometer array  # WARNING: Not tested
-  #   serial-interface:
-  #     port: /dev/ttyrXX
-  #     baudrate: 115200
-  #     bytesize: 8
-  #     stopbits: 1
-  #     parity: E
-  #     timeout: 0.1
-  #   device-id: '00'  # RS485 device ID
-  #   sensors:
-  #     Pyro_h1:
-  #       head-number: 1
-  #       emissivity: 1.0  # 0.0 < emissivity <= 1.0
-  #       t90: 0.18  # s, has to be a value out of t90-dict (below)
-  #       # comment: your comment for nomad ELN
-  #     Pyro_h2:
-  #       head-number: 2
-  #       emissivity: 1.0  # 0.0 < emissivity <= 1.0
-  #       t90: 0.18  # s, has to be a value out of t90-dict (below)
-  #       # comment: your comment for nomad ELN
-  #   t90-dict:  # according to manual, don't modify that
-  #     0.18: 1
-  #     0.5: 2
-  #     1.0: 3
-  #     2.0: 4
-  #     5.0: 5
-  #     10.0: 6
-  #     30.0: 7
+
+  Series-600:  # Pyrometer array  # WARNING: Not tested
+    skip: 1
+    serial-interface:
+      port: /dev/ttyrXX
+      baudrate: 115200
+      bytesize: 8
+      stopbits: 1
+      parity: E
+      timeout: 0.1
+    device-id: '00'  # RS485 device ID
+    sensors:
+      Pyro_h1:
+        head-number: 1
+        emissivity: 1.0  # 0.0 < emissivity <= 1.0
+        t90: 0.18  # s, has to be a value out of t90-dict (below)
+        # comment: your comment for nomad ELN
+      Pyro_h2:
+        head-number: 2
+        emissivity: 1.0  # 0.0 < emissivity <= 1.0
+        t90: 0.18  # s, has to be a value out of t90-dict (below)
+        # comment: your comment for nomad ELN
+    t90-dict:  # according to manual, don't modify that
+      0.18: 1
+      0.5: 2
+      1.0: 3
+      2.0: 4
+      5.0: 5
+      10.0: 6
+      30.0: 7
+
+  Dias-Pyrometer:  # Pyrometer
+    serial-interface:
+      port: /dev/ttyUSB1
+      baudrate: 19200
+      bytesize: 8
+      stopbits: 1
+      parity: E
+      timeout: 0.05
+    emissivity: 0.95       # 0.01 < e <= 1.0
+    transmissivity: 1.0   # 0.50 < t <= 1.0
+
+---------------------------------------
+                 CAMERAS
+---------------------------------------
+
   Basler:
+    skip: 1
     device-number: 0
     exposure-time: 40000  # µs, Recomended: 40000 for acA2440, 5000 for acA2500
     frame-rate: 1000  # device-specific, used for configuration of camera only, Recomended: 1000
     timeout: 1000  # ms
     file-format: jpeg #jpeg or tiff, PNG WILL NOT WORK!
     # comment: your comment for nomad ELN
+
   Optris-IP-640:
+    skip: 1
     serial-number: 20112117
     measurement-range: [0, 250]  # [-20, 100], [0, 250], [150 900]
     framerate: 32
@@ -322,37 +364,33 @@ devices:
     # cali-path:  C:/irDirectSDK/cali # Custom path to calibration files. Defaults to "/usr/share/libirimager/cali"
     # comment: your comment for nomad ELN
 
-#  Vifcon_achsen:
-#    IP: "localhost" # as string
-#    Axis:
-#      Hub1:
-#        Name: "Hub1"
-#        Port: 51101
-#      Hub2:
-#        Name: "Hub2"
-#        Port: 51102
-#      Rot1:
-#        Name: "Rot1"
-#        Port: 51201
-#      Pi1:
-#        Name: "Pi1"
-#        Port: 51301
+---------------------------------------
+            VIFCON DEVICES
+---------------------------------------
 
-#  Vifcon_gase:
-#    IP: "localhost" # as string
-#    Port: 52000
+  Vifcon_achsen:
+    skip: 1
+    IP: "localhost" # as string
+    Axis:
+      Hub1:
+        Name: "Hub1"
+        Port: 51101
+      Hub2:
+        Name: "Hub2"
+        Port: 51102
+      Rot1:
+        Name: "Rot1"
+        Port: 51201
+      Pi1:
+        Name: "Pi1"
+        Port: 51301
 
-#  Vifcon_generator:
-#    IP: "localhost" # as string
-#    Port: 53000
+  Vifcon_gase:
+    skip: 1
+    IP: "localhost" # as string
+    Port: 52000
 
-  Dias-Pyrometer:  # Pyrometer
-    serial-interface:
-      port: /dev/ttyUSB1
-      baudrate: 19200
-      bytesize: 8
-      stopbits: 1
-      parity: E
-      timeout: 0.05
-    emissivity: 0.95       # 0.01 < e <= 1.0
-    transmissivity: 1.0   # 0.50 < t <= 1.0
+  Vifcon_generator:
+    skip: 1
+    IP: "localhost" # as string
+    Port: 53000

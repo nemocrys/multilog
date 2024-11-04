@@ -181,48 +181,48 @@ class Controller(QObject):
         port_List  = [] # Liste der Ports
         vifconDevices = []
         for device_name in self.config["devices"]:
-            if "DAQ-6510" in device_name:
+            if "DAQ-6510" in device_name and self.config["devices"][device_name]["skip"] != 1:
                 device = Daq6510(self.config["devices"][device_name], device_name)
                 widget = Daq6510Widget(device)
-            elif "IFM-flowmeter" in device_name:
+            elif "IFM-flowmeter" in device_name and self.config["devices"][device_name]["skip"] != 1:
                 device = IfmFlowmeter(self.config["devices"][device_name], device_name)
                 widget = IfmFlowmeterWidget(device)
-            elif "Eurotherm" in device_name:
+            elif "Eurotherm" in device_name and self.config["devices"][device_name]["skip"] != 1:
                 device = Eurotherm(self.config["devices"][device_name], device_name)
                 widget = EurothermWidget(device)
-            elif "Optris-IP-640" in device_name:
+            elif "Optris-IP-640" in device_name and self.config["devices"][device_name]["skip"] != 1:
                 device = OptrisIP640(self.config["devices"][device_name], device_name)
                 widget = OptrisIP640Widget(device)
                 self.cameras.append(device_name)
-            elif "IGA-6-23" in device_name or "IGAR-6-adv" in device_name:
+            elif ("IGA-6-23" in device_name or "IGAR-6-adv" in device_name) and self.config["devices"][device_name]["skip"] != 1:
                 device = PyrometerLumasense(
                     self.config["devices"][device_name], device_name
                 )
                 widget = PyrometerLumasenseWidget(device)
-            elif "Series-600" in device_name:
+            elif "Series-600" in device_name and self.config["devices"][device_name]["skip"] != 1:
                 device = PyrometerArrayLumasense(
                     self.config["devices"][device_name], device_name
                 )
                 widget = PyrometerArrayLumasenseWidget(device)
-            elif "Basler" in device_name:
+            elif "Basler" in device_name and self.config["devices"][device_name]["skip"] != 1:
                 device = BaslerCamera(self.config["devices"][device_name], device_name)
                 widget = BaslerCameraWidget(device)
                 self.cameras.append(device_name)
-            elif "Process-Condition-Logger" in device_name:
+            elif "Process-Condition-Logger" in device_name and self.config["devices"][device_name]["skip"] != 1:
                 device = ProcessConditionLogger(
                     self.config["devices"][device_name], device_name
                 )
                 widget = ProcessConditionLoggerWidget(device)
-            elif "Vifcon_achsen" in device_name:
+            elif "Vifcon_achsen" in device_name and self.config["devices"][device_name]["skip"] != 1:
                 device = Vifcon_achsen(self.config["devices"][device_name], device_name)
                 widget = Vifcon_achsenWidget(device)
-            elif "Vifcon_gase" in device_name:
+            elif "Vifcon_gase" in device_name and self.config["devices"][device_name]["skip"] != 1:
                 device = Vifcon_gase(self.config["devices"][device_name], device_name)
                 widget = Vifcon_gaseWidget(device)
-            elif "Vifcon_generator" in device_name:
+            elif "Vifcon_generator" in device_name and self.config["devices"][device_name]["skip"] != 1:
                 device = Vifcon_generator(self.config["devices"][device_name], device_name)
                 widget = Vifcon_generatorWidget(device)
-            elif "Dias" in device_name:
+            elif "Dias" in device_name and self.config["devices"][device_name]["skip"] != 1:
                 device = PyrometerDias(self.config["devices"][device_name], device_name)
                 widget = PyrometerDiasWidget(device)
             #######################
