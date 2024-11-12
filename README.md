@@ -23,6 +23,7 @@ Currently, the following devices are supported:
   - IGA-6-23
   - IGAR-6
   - Series-600
+- DIAS Pyrometer
 - Basler optical cameras (Ethernet)
 - Optris IP-640 IR camera (USB)
 - Eurotherm controller (RS232)
