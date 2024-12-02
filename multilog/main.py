@@ -181,79 +181,83 @@ class Controller(QObject):
         port_List  = [] # Liste der Ports
         vifconDevices = []
         for device_name in self.config["devices"]:
-            if "DAQ-6510" in device_name and self.config["devices"][device_name]["skip"] != 1:
-                device = Daq6510(self.config["devices"][device_name], device_name)
-                widget = Daq6510Widget(device)
-            elif "IFM-flowmeter" in device_name and self.config["devices"][device_name]["skip"] != 1:
-                device = IfmFlowmeter(self.config["devices"][device_name], device_name)
-                widget = IfmFlowmeterWidget(device)
-            elif "Eurotherm" in device_name and self.config["devices"][device_name]["skip"] != 1:
-                device = Eurotherm(self.config["devices"][device_name], device_name)
-                widget = EurothermWidget(device)
-            elif "Optris-IP-640" in device_name and self.config["devices"][device_name]["skip"] != 1:
-                device = OptrisIP640(self.config["devices"][device_name], device_name)
-                widget = OptrisIP640Widget(device)
-                self.cameras.append(device_name)
-            elif ("IGA-6-23" in device_name or "IGAR-6-adv" in device_name) and self.config["devices"][device_name]["skip"] != 1:
-                device = PyrometerLumasense(
-                    self.config["devices"][device_name], device_name
-                )
-                widget = PyrometerLumasenseWidget(device)
-            elif "Series-600" in device_name and self.config["devices"][device_name]["skip"] != 1:
-                device = PyrometerArrayLumasense(
-                    self.config["devices"][device_name], device_name
-                )
-                widget = PyrometerArrayLumasenseWidget(device)
-            elif "Basler" in device_name and self.config["devices"][device_name]["skip"] != 1:
-                device = BaslerCamera(self.config["devices"][device_name], device_name)
-                widget = BaslerCameraWidget(device)
-                self.cameras.append(device_name)
-            elif "Process-Condition-Logger" in device_name and self.config["devices"][device_name]["skip"] != 1:
-                device = ProcessConditionLogger(
-                    self.config["devices"][device_name], device_name
-                )
-                widget = ProcessConditionLoggerWidget(device)
-            elif "Vifcon_achsen" in device_name and self.config["devices"][device_name]["skip"] != 1:
-                device = Vifcon_achsen(self.config["devices"][device_name], device_name)
-                widget = Vifcon_achsenWidget(device)
-            elif "Vifcon_gase" in device_name and self.config["devices"][device_name]["skip"] != 1:
-                device = Vifcon_gase(self.config["devices"][device_name], device_name)
-                widget = Vifcon_gaseWidget(device)
-            elif "Vifcon_generator" in device_name and self.config["devices"][device_name]["skip"] != 1:
-                device = Vifcon_generator(self.config["devices"][device_name], device_name)
-                widget = Vifcon_generatorWidget(device)
-            elif "Dias" in device_name and self.config["devices"][device_name]["skip"] != 1:
-                device = PyrometerDias(self.config["devices"][device_name], device_name)
-                widget = PyrometerDiasWidget(device)
-            #######################
-            # add new devices here!
-            #######################
-            else:
-                raise ValueError(f"unknown device {device_name} in config file.")
+            print(device_name)
+            skip = self.config['devices'][device_name]['skip']
+            
+            if not skip: 
+                if "DAQ-6510" in device_name:
+                    device = Daq6510(self.config["devices"][device_name], device_name)
+                    widget = Daq6510Widget(device)
+                elif "IFM-flowmeter" in device_name:
+                    device = IfmFlowmeter(self.config["devices"][device_name], device_name)
+                    widget = IfmFlowmeterWidget(device)
+                elif "Eurotherm" in device_name:
+                    device = Eurotherm(self.config["devices"][device_name], device_name)
+                    widget = EurothermWidget(device)
+                elif "Optris-IP-640" in device_name:
+                    device = OptrisIP640(self.config["devices"][device_name], device_name)
+                    widget = OptrisIP640Widget(device)
+                    self.cameras.append(device_name)
+                elif ("IGA-6-23" in device_name or "IGAR-6-adv" in device_name):
+                    device = PyrometerLumasense(
+                        self.config["devices"][device_name], device_name
+                    )
+                    widget = PyrometerLumasenseWidget(device)
+                elif "Series-600" in device_name:
+                    device = PyrometerArrayLumasense(
+                        self.config["devices"][device_name], device_name
+                    )
+                    widget = PyrometerArrayLumasenseWidget(device)
+                elif "Basler" in device_name:
+                    device = BaslerCamera(self.config["devices"][device_name], device_name)
+                    widget = BaslerCameraWidget(device)
+                    self.cameras.append(device_name)
+                elif "Process-Condition-Logger" in device_name:
+                    device = ProcessConditionLogger(
+                        self.config["devices"][device_name], device_name
+                    )
+                    widget = ProcessConditionLoggerWidget(device)
+                elif "Vifcon_achsen" in device_name:
+                    device = Vifcon_achsen(self.config["devices"][device_name], device_name)
+                    widget = Vifcon_achsenWidget(device)
+                elif "Vifcon_gase" in device_name:
+                    device = Vifcon_gase(self.config["devices"][device_name], device_name)
+                    widget = Vifcon_gaseWidget(device)
+                elif "Vifcon_generator" in device_name:
+                    device = Vifcon_generator(self.config["devices"][device_name], device_name)
+                    widget = Vifcon_generatorWidget(device)
+                elif "Dias" in device_name:
+                    device = PyrometerDias(self.config["devices"][device_name], device_name)
+                    widget = PyrometerDiasWidget(device)
+                #######################
+                # add new devices here!
+                #######################
+                else:
+                    raise ValueError(f"unknown device {device_name} in config file.")
 
-            self.devices.update({device_name: device})
+                self.devices.update({device_name: device})
 
-            if "Basler" in device_name:
-                self.main_window.add_tab(widget, f"{device_name} ({device._model_number})") # widget name is the name of the Basler camera model number, not just the name in the config
-            else:
-                self.main_window.add_tab(widget, device_name) # config-name for all other devices except Basler cameras
+                if "Basler" in device_name:
+                    self.main_window.add_tab(widget, f"{device_name} ({device._model_number})") # widget name is the name of the Basler camera model number, not just the name in the config
+                else:
+                    self.main_window.add_tab(widget, device_name) # config-name for all other devices except Basler cameras
 
-            self.tabs.update({device_name: widget})
+                self.tabs.update({device_name: widget})
 
-            ### VIFCON CONECTION
-            # Ist der Port Null, wird keine Verbindung hergestellt:
-            ip = self.config["settings"]["IP-Vifcon"]
-            # trigger = []
-            # port_List  = [] # Liste der Ports
-            # vifconDevices = []
-            try:
-                if self.config["devices"][device_name]['Port-Vifcon'] != 0:
-                    port_List.append(self.config["devices"][device_name]['Port-Vifcon'])
-                    trigger.append(device_name)
-                    vifconDevices.append(self.devices[device_name])
-            except:
-                logger.debug(f"{self.config['devices'][device_name]} has no Vifcon Port")
-                    
+                ### VIFCON CONECTION
+                # Ist der Port Null, wird keine Verbindung hergestellt:
+                ip = self.config["settings"]["IP-Vifcon"]
+                # trigger = []
+                # port_List  = [] # Liste der Ports
+                # vifconDevices = []
+                try:
+                    if self.config["devices"][device_name]['Port-Vifcon'] != 0:
+                        port_List.append(self.config["devices"][device_name]['Port-Vifcon'])
+                        trigger.append(device_name)
+                        vifconDevices.append(self.devices[device_name])
+                except:
+                    logger.debug(f"{self.config['devices'][device_name]} has no Vifcon Port")
+                        
         # setup threads
         logger.debug("Setting up threads")
         self.samplers = []
