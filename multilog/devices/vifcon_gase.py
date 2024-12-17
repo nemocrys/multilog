@@ -44,6 +44,11 @@ class Vifcon_gase:
         except Exception as e:
             logger.exception(f"Could not sample {self.name}.")
             data = {"MFC24": np.nan, "MFC25": np.nan, "MFC26": np.nan, "MFC27": np.nan, "DM21": np.nan, "PP21": np.nan, "PP22": np.nan, "PP22I": np.nan}
+        
+        # change pressure data to np.nan if value is to low
+        if data["PP21"] <= 1e-5: data["PP21"] = np.nan
+        if data["PP22"] <= 1e-5: data["PP22"] = np.nan
+        if data["DM21"] <= 1e-5: data["DM21"] = np.nan
         return data
 
     def save_measurement(self, time_abs, time_rel, sampling):
@@ -61,15 +66,20 @@ class Vifcon_gase:
             logger.warning(
                 f"{self.name} save_measurement: time difference between event and saving of {timediff} seconds for samplint timestep {time_abs.isoformat(timespec='milliseconds').replace('T', ' ')} - {time_rel}"
             )
+        # Format pressure data as scientific notation
+        dm21Formated = "{:.2E}".format(sampling["DM21"])
+        pp21Formated = "{:.2E}".format(sampling["PP21"])
+        pp22Formated = "{:.2E}".format(sampling["PP22"])
+
         self.meas_data["MFC24"].append(sampling["MFC24"])
         self.meas_data["MFC25"].append(sampling["MFC25"])
         self.meas_data["MFC26"].append(sampling["MFC26"])
         self.meas_data["MFC27"].append(sampling["MFC27"])
-        self.meas_data["DM21"].append(sampling["DM21"])
-        self.meas_data["PP21"].append(sampling["PP21"])
-        self.meas_data["PP22"].append(sampling["PP22"])
+        self.meas_data["DM21"].append(dm21Formated)
+        self.meas_data["PP21"].append(pp21Formated)
+        self.meas_data["PP22"].append(pp22Formated)
         self.meas_data["PP22I"].append(sampling["PP22I"])
-        line = f"{time_abs.isoformat(timespec='milliseconds').replace('T', ' ')},{time_rel},{sampling['MFC24']},{sampling['MFC25']},{sampling['MFC26']},{sampling['MFC27']},{sampling['DM21']},{sampling['PP21']},{sampling['PP22']},{sampling['PP22I']},\n"
+        line = f"{time_abs.isoformat(timespec='milliseconds').replace('T', ' ')},{time_rel},{sampling['MFC24']},{sampling['MFC25']},{sampling['MFC26']},{sampling['MFC27']},{dm21Formated},{pp21Formated},{pp22Formated},{sampling['PP22I']},\n"
         with open(self.filename, "a", encoding="utf-8") as f:
             f.write(line)
 

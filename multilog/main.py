@@ -181,7 +181,6 @@ class Controller(QObject):
         port_List  = [] # Liste der Ports
         vifconDevices = []
         for device_name in self.config["devices"]:
-            print(device_name)
             skip = self.config['devices'][device_name]['skip']
             
             if not skip: 
