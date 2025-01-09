@@ -339,7 +339,9 @@ class PlotWidget(QSplitter):
             sensor (str): name of the sensor
             val (str/float): measurement value
         """
-        if self.unit == "-":
+        if self.unit == "-" or self.unit == "":
             self.sensor_value_labels[sensor].setText(f"{val:.3f}")
+        elif self.unit == "mbar": # exeption for vifcon_gase to show the scientific format
+            self.sensor_value_labels[sensor].setText(val)
         else:
             self.sensor_value_labels[sensor].setText(f"{val:.3f} {self.unit}")
