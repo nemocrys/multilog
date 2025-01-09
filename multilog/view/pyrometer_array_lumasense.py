@@ -1,220 +1,117 @@
-from copy import deepcopy
-import datetime
 import logging
-import numpy as np
-from serial import Serial, SerialException
-import yaml
+from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QFont, QDoubleValidator
+from PyQt5.QtWidgets import (
+    QVBoxLayout,
+    QHBoxLayout,
+    QLabel,
+    QGroupBox,
+    QLineEdit,
+    QPushButton,
+)
+from time import sleep
 
+from .base_classes import PlotWidget
+from ..devices.pyrometer_array_lumasense import PyrometerArrayLumasense
 
 logger = logging.getLogger(__name__)
 
 
-class SerialMock:
-    """This class is used to mock a serial interface for debugging purposes."""
-
-    def write(self, _):
-        pass
-
-    def readline(self):
-        return "".encode()
-
-
-class PyrometerArrayLumasense:
-    """Lumasense pyrometer, e.g. Series 600."""
-
-    def __init__(self, config, name="PyrometerArrayLumasense"):
-        """Setup serial interface, configure device.
+class PyrometerArrayLumasenseWidget(PlotWidget):
+    def __init__(self, pyrometer_array: PyrometerArrayLumasense, parent=None):
+        """GUI widget of Lumasense pyrometer array.
 
         Args:
-            config (dict): device configuration (as defined in
-                config.yml in the devices-section).
-            name (str, optional): Device name.
+            pyrometer_array (PyrometerArrayLumasense):
+                PyrometerArrayLumasense device including configuration
+                information.
         """
-        logger.info(f"Initializing PyrometerArrayLumasense device '{name}'")
-        self.config = config
-        self.device_id = config["device-id"]
-        self.name = name
-        try:
-            self.serial = Serial(**config["serial-interface"])
-        except SerialException as e:
-            logger.exception(f"Connection to {self.name} not possible.")
-            self.serial = SerialMock()
-        self.t90_dict = config["t90-dict"]
-        self.meas_data = {}
-        self.head_numbering = {}
-        self.sensors = []
-        self.emissivities = {}
-        self.t90s = {}
-        for sensor in config["sensors"]:
-            self.sensors.append(sensor)
-            head_number = config["sensors"][sensor]["head-number"]
-            self.head_numbering.update({sensor: head_number})
-            self.meas_data.update({sensor: []})
-            self.emissivities.update({sensor: config["sensors"][sensor]["emissivity"]})
-            self.t90s.update({sensor: config["sensors"][sensor]["t90"]})
-            if type(self.serial) != SerialMock:
-                self.set_emissivity(
-                    head_number, config["sensors"][sensor]["emissivity"]
-                )
-                self.set_emissivity(head_number, config["sensors"][sensor]["t90"])
-        self.latestSample = np.nan
-
-    def _get_ok(self):
-        """Check if command was accepted."""
-        assert self.serial.readline().decode().strip() == "ok"
-
-    def _get_float(self):
-        """Read floatingpoint value."""
-        string_val = self.serial.readline().decode().strip()
-        return float(f"{string_val[:-1]}.{string_val[-1:]}")
-
-    def get_heat_id(self, head_number):
-        """Get the id of a certain head."""
-        cmd = f"{self.device_id}A{head_number}sn\r"
-        self.serial.write(cmd.encode())
-        return self.serial.readline().decode().strip()
-
-    def set_emissivity(self, head_number, emissivity):
-        """Set emissivity for a certain head."""
         logger.info(
-            f"{self.name} - setting emissivity {emissivity} for head {head_number}"
+            f"Setting up PyrometerArrayLumasense widget for device {pyrometer_array.name}"
         )
-        cmd = f"{self.device_id}A{head_number}em{emissivity*100:05.1f}\r".replace(
-            ".", ""
+        super().__init__(
+            pyrometer_array.sensors, parameter="Temperature", unit="°C", parent=parent
         )
-        self.serial.write(cmd.encode())
-        self._get_ok()
 
-    def set_t90(self, head_number, t90):
-        """Set t90 for a certain head."""
-        logger.info(f"{self.name} - setting t90 {t90} for head {head_number}")
-        cmd = f"{self.device_id}A{head_number}ez{self.t90_dict[t90]}\r"
-        self.serial.write(cmd.encode())
-        self._get_ok()
+        # Group box with emissivity, transmissivity, ...
+        self.group_box_parameter = QGroupBox("Pyrometer configuration")
+        self.group_box_parameter_layout = QVBoxLayout()
+        self.group_box_parameter.setLayout(self.group_box_parameter_layout)
+        self.parameter_layout.addWidget(self.group_box_parameter)
+        self.parameter_layout.setAlignment(self.group_box_parameter, Qt.AlignTop)
 
-    def read_sensor(self, head_number):
-        """Read temperature of a certain head."""
-        cmd = f"{self.device_id}A{head_number}ms\r"
-        self.serial.write(cmd.encode())
-        return self._get_float()
+        for sensor in pyrometer_array.sensors:
+            row_layout = QHBoxLayout()  # Horizontales Layout für die Zeile
 
-    def sample(self):
-        """Read temperature form all heads.
+            # Text vor dem QLineEdit-Feld
+            lbl_emissivity_label_before = QLabel(f"{sensor} emissivity:\t")
+            lbl_emissivity_label_before.setFont(QFont("Times", 12))
+            row_layout.addWidget(lbl_emissivity_label_before)
 
-        Returns:
-            dict: {head name: temperature}.
-        """
-        sampling = {}
-        for sensor in self.head_numbering:
-            try:
-                sampling.update({sensor: self.read_sensor(self.head_numbering[sensor])})
-            except Exception as e:
-                logger.exception(
-                    f"Could not sample PyrometerArrayLumasense heat '{sensor}'."
-                )
-                sampling.update({sensor: np.nan})
+            # QLineEdit Feld
+            validator = QDoubleValidator(0.0, 100.0, 1, self)
+            validator.setNotation(QDoubleValidator.StandardNotation)
+            line_edit_e = QLineEdit(self)
+            line_edit_e.setFont(QFont("Times", 12))
+            line_edit_e.setValidator(validator)
+            line_edit_e.setFixedWidth(80)  # Feste Breite
+            line_edit_e.setAlignment(Qt.AlignRight)  # Text zentrieren
+            line_edit_e.setPlaceholderText(f"{pyrometer_array.emissivities[sensor]*100}")
+            row_layout.addWidget(line_edit_e)
 
-        self.setLatestSample(sampling)
-        return sampling
+            # Text nach dem QLineEdit-Feld
+            self.label_after = QLabel("%")
+            self.label_after.setFont(QFont("Times", 12))
+            row_layout.addWidget(self.label_after)
 
-    def setLatestSample(self, sampling):
-        self.latestSample = sampling
-        
-    def getLatestSample(self):
-        return self.latestSample
-        
+            # Button zum Anpassen
+            self.adjust_button = QPushButton("Change", self)
+            self.pyrometer_array = pyrometer_array
+            self.adjust_button.clicked.connect(lambda _, e=line_edit_e, h=pyrometer_array.head_numbering[sensor]: self.adjust_e(e, h))
+            row_layout.addWidget(self.adjust_button)
 
-    def init_output(self, directory="./"):
-        """Initialize the csv output file.
+            self.group_box_parameter_layout.addLayout(row_layout) # Zeile zum Hauptlayout hinzufügen
+
+            lbl_t90 = QLabel(f"{sensor} t90:\t\t{pyrometer_array.t90s[sensor]} s")
+            lbl_t90.setFont(QFont("Times", 12))
+            self.group_box_parameter_layout.addWidget(lbl_t90)
+
+
+    def adjust_e(self, line_edit_e, headNr):
+        if line_edit_e.text() != "":
+            new_emissivity = float(line_edit_e.text())/100
+        else:
+            new_emissivity = False
+        if new_emissivity:
+            for retryNr in range(5):
+                try:
+                    self.pyrometer_array.set_emissivity(headNr, new_emissivity)
+                    line_edit_e.setText("")
+                    sleep(0.15)
+                    line_edit_e.setPlaceholderText(str(new_emissivity*100))
+                    break
+                except:
+                    logger.exception(f" HeadNr {headNr}: changing of emissivity not possible. Retring. {retryNr}. Retry.")
+                    line_edit_e.setText("")
+                sleep(0.05)
+
+    def set_initialization_data(self, sampling):
+        """Update labels with sampling data (used before recording is
+        started).
 
         Args:
-            directory (str, optional): Output directory. Defaults to "./".
+            sampling (dict): {head name: temperature}
         """
-        self.filename = f"{directory}/{self.name}.csv"
-        header = "time_abs,time_rel,"
-        units = "# datetime,s,"
-        for sensor in self.meas_data:
-            header += f"{sensor},"
-            units += "DEG C,"
-        header += "\n"
-        units += "\n"
-        with open(self.filename, "w", encoding="utf-8") as f:
-            f.write(units)
-            f.write(header)
-        self.write_nomad_file(directory)
-
-    def write_nomad_file(self, directory="./"):
-        """Write .archive.yaml file based on device configuration.
-
-        Args:
-            directory (str, optional): Output directory. Defaults to "./".
-        """
-        with open("./multilog/nomad/archive_template_sensor.yml") as f:
-            nomad_template = yaml.safe_load(f)
-        definitions = nomad_template.pop("definitions")
-        data = nomad_template.pop("data")
-        sensor_schema_template = nomad_template.pop("sensor_schema_template")
-        data.update(
-            {
-                "data_file": self.filename.split("/")[-1],
-            }
-        )
-        for sensor_name in self.meas_data:
-            sensor_name_nomad = sensor_name.replace(" ", "_").replace("-", "_")
-            data.update(
-                {
-                    sensor_name_nomad: {
-                        # "model": "your_field_here",
-                        # "name": sensor_name_nomad,
-                        # "sensor_id": sensor_name.split(" ")[0],
-                        # "attached_to": sensor_name, # TODO this information is important!
-                        # "measured_property": ,
-                        # "type": sensor_type,
-                        # "notes": "TE_1_K air 155 mm over crucible",
-                        # "unit": self.unit[sensor_name],  # TODO
-                        "emissivity": self.emissivities[sensor_name],
-                        # "head_id": self.head_numbering[sensor_name],
-                        "t90": self.t90_dict[self.head_numbering[sensor_name]],
-                        "value_timestamp_rel": "#/data/value_timestamp_rel",
-                        "value_timestamp_abs": "#/data/value_timestamp_abs",
-                    }
-                }
-            )
-            if "comment" in self.config["sensors"][sensor_name]:
-                data[sensor_name_nomad].update({"comment": self.config["sensors"][sensor_name]["comment"]})
-            sensor_schema = deepcopy(sensor_schema_template)
-            sensor_schema["section"]["quantities"]["value_log"]["m_annotations"][
-                "tabular"
-            ]["name"] = sensor_name
-            definitions["sections"]["Sensors_list"]["sub_sections"].update(
-                {sensor_name_nomad: sensor_schema}
-            )
-        nomad_dict = {
-            "definitions": definitions,
-            "data": data,
-        }
-        with open(f"{directory}/{self.name}.archive.yaml", "w", encoding="utf-8") as f:
-            yaml.safe_dump(nomad_dict, f, sort_keys=False)
-
-    def save_measurement(self, time_abs, time_rel, sampling):
-        """Write measurement data to file.
-
-        Args:
-            time_abs (datetime): measurement timestamp.
-            time_rel (float): relative time of measurement.
-            sampling (dict): measurement data, as returned from sample()
-        """
-        timediff = (
-            datetime.datetime.now(datetime.timezone.utc).astimezone() - time_abs
-        ).total_seconds()
-        if timediff > 1:
-            logger.warning(
-                f"{self.name} save_measurement: time difference between event and saving of {timediff} seconds for samplint timestep {time_abs.isoformat(timespec='milliseconds').replace('T', ' ')} - {time_rel}"
-            )
-        line = f"{time_abs.isoformat(timespec='milliseconds').replace('T', ' ')},{time_rel},"
         for sensor in sampling:
-            self.meas_data[sensor].append(sampling[sensor])
-            line += f"{sampling[sensor]},"
-        line += "\n"
-        with open(self.filename, "a", encoding="utf-8") as f:
-            f.write(line)
+            self.set_label(sensor, sampling[sensor])
+
+    def set_measurement_data(self, rel_time, meas_data):
+        """Update plot and labels with measurement data (used after
+        recording was started).
+
+        Args:
+            rel_time (list): relative time of measurement data.
+            meas_data (dict): {heat name: measurement time series}
+        """
+        for sensor in meas_data:
+            self.set_data(sensor, rel_time, meas_data)

@@ -1,249 +1,151 @@
-from copy import deepcopy
-import datetime
 import logging
-import numpy as np
-from serial import Serial, SerialException
-import yaml
+from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QFont, QDoubleValidator
+from PyQt5.QtWidgets import (
+    QVBoxLayout,
+    QHBoxLayout,
+    QLabel,
+    QGroupBox,
+    QLineEdit,
+    QPushButton,
+)
+
+from ..devices.pyrometer_lumasense import PyrometerLumasense
+from .base_classes import PlotWidget
 
 logger = logging.getLogger(__name__)
+from time import sleep
 
-
-class SerialMock:
-    """This class is used to mock a serial interface for debugging purposes."""
-
-    def write(self, _):
-        pass
-
-    def readline(self):
-        return "".encode()
-
-
-class PyrometerLumasense:
-    """Lumasense pyrometer, e.g. IGA-6-23 or IGAR-6-adv."""
-
-    def __init__(self, config, name="PyrometerLumasense"):
-        """Setup serial interface, configure device.
+class PyrometerLumasenseWidget(PlotWidget):
+    def __init__(self, pyrometer: PyrometerLumasense, parent=None):
+        """GUI widget of Lumasense pyrometer.
 
         Args:
-            config (dict): device configuration (as defined in
-                config.yml in the devices-section).
-            name (str, optional): Device name.
+            pyrometer (PyrometerLumasense): PyrometerLumasense device
+                including configuration information.
         """
-        logger.info(f"Initializing PyrometerLumasense device '{name}'")
-        self.config = config
-        self.device_id = config["device-id"]
-        self.name = name
-        self.t90_dict = config["t90-dict"]
-        self.latestSample = np.nan
-
-        if self.config.get("serial-interface") != None: # serial conection
-            self.meas_data = []
-            
-            try:
-                self.serial = Serial(**config["serial-interface"])
-            except SerialException as e:
-                logger.exception(f"Connection to {self.name} not possible.")
-                self.serial = SerialMock()
-            if type(self.serial) != SerialMock:
-                self.set_emissivity(config["emissivity"])
-                self.set_transmissivity(config["transmissivity"])
-                self.set_t90(config["t90"])
-        """        
-        if self.config.get("tcp-interface") != None: # tcp conection
-            self.conectionType = "tcp"
-            self.vifconIP      = config["tcp-interface"]["IP"]
-            self.vifconPort    = config["tcp-interface"]["Port"]
-            self.meas_data = []
-            try:
-                self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                self.s.connect((self.vifconIP, self.vifconPort))
-                logger.info(f"{self.name} connected to VIFCON")
-        """
-
-    def _get_ok(self):
-        """Check if command was accepted."""
-        assert self.serial.readline().decode().strip() == "ok"
-
-    def _get_float(self):
-        """Read floatingpoint value."""
-        string_val = self.serial.readline().decode().strip()
-        return float(f"{string_val[:-1]}.{string_val[-1:]}")
-
-    @property
-    def focus(self):
-        """Get focuspoint."""
-        cmd = f"{self.device_id}df\r"
-        self.serial.write(cmd.encode())
-        return self.serial.readline().decode().strip()
-
-    @property
-    def intrument_id(self):
-        """Get the instrument id."""
-        if type(self.serial) == SerialMock:
-            return -1
-        cmd = f"{self.device_id}na\r"
-        self.serial.write(cmd.encode())
-        return self.serial.readline().decode().strip()
-
-    @property
-    def emissivity(self):
-        """Read the current emissivity."""
-        if type(self.serial) == SerialMock:
-            return -1
-        cmd = f"{self.device_id}em\r"
-        self.serial.write(cmd.encode())
-        return self._get_float()
-
-    @property
-    def transmissivity(self):
-        """Read the current transmissivity."""
-        if type(self.serial) == SerialMock:
-            return -1
-        cmd = f"{self.device_id}et\r"
-        self.serial.write(cmd.encode())
-        return self._get_float()
-
-    @property
-    def t90(self):
-        """Reat the current t90 value."""
-        if type(self.serial) == SerialMock:
-            return -1
-        cmd = f"{self.device_id}ez\r"
-        self.serial.write(cmd.encode())
-        idx = int(self.serial.readline().decode().strip())
-        t90_dict_inverted = {v: k for k, v in self.t90_dict.items()}
-        return t90_dict_inverted[idx]
-
-    def set_emissivity(self, emissivity):
-        """Set emissivity and check if it was accepted."""
-        logger.info(f"{self.name} - setting emissivity {emissivity}")
-        cmd = f"{self.device_id}em{emissivity*100:05.1f}\r".replace(".", "")
-        self.serial.write(cmd.encode())
-        self._get_ok()
-        assert self.emissivity == emissivity * 100
-
-    def set_transmissivity(self, transmissivity):
-        """Set transmissivity and check if it was accepted."""
-        logger.info(f"{self.name} - setting transmissivity {transmissivity}")
-        cmd = f"{self.device_id}et{transmissivity*100:05.1f}\r".replace(".", "")
-        self.serial.write(cmd.encode())
-        self._get_ok()
-        assert self.transmissivity == transmissivity * 100
-
-    def set_t90(self, t90):
-        """Set t90 and check if it was accepted."""
-        logger.info(f"{self.name} - setting t90 {t90}")
-        cmd = f"{self.device_id}ez{self.t90_dict[t90]}\r"
-        self.serial.write(cmd.encode())
-        self._get_ok()
-        assert self.t90 == t90
-
-    def sample(self):
-        """Read temperature form device.
-
-        Returns:
-            float: temperature reading.
-        """
-        
-        try:
-            cmd = f"{self.device_id}ms\r"
-            self.serial.write(cmd.encode())
-            val = self._get_float()
-        except Exception as e:
-            logger.exception(f"Could not sample PyrometerLumasense.")
-            val = np.nan
-
-        self.setLatestSample(val)
-        return val
-
-    def setLatestSample(self, sampling):
-        self.latestSample = sampling
-        
-    def getLatestSample(self):
-        return self.latestSample
-
-    def init_output(self, directory="./"):
-        """Initialize the csv output file.
-
-        Args:
-            directory (str, optional): Output directory. Defaults to "./".
-        """
-        self.filename = f"{directory}/{self.name}.csv"
-        units = "# datetime,s,DEG C,\n"
-        header = "time_abs,time_rel,Temperature,\n"
-        with open(self.filename, "w", encoding="utf-8") as f:
-            f.write(units)
-            f.write(header)
-        self.write_nomad_file(directory)
-
-    def write_nomad_file(self, directory="./"):
-        """Write .archive.yaml file based on device configuration.
-
-        Args:
-            directory (str, optional): Output directory. Defaults to "./".
-        """
-        with open("./multilog/nomad/archive_template_sensor.yml") as f:
-            nomad_template = yaml.safe_load(f)
-        definitions = nomad_template.pop("definitions")
-        data = nomad_template.pop("data")
-        sensor_schema_template = nomad_template.pop("sensor_schema_template")
-        data.update(
-            {
-                "data_file": self.filename.split("/")[-1],
-            }
+        logger.info(f"Setting up PyrometerLumasense widget for device {pyrometer.name}")
+        self.sensor_name = pyrometer.name
+        super().__init__(
+            [self.sensor_name], parameter="Temperature", unit="°C", parent=parent
         )
-        sensor_name_nomad = self.name.replace(" ", "_").replace("-", "_")
-        data.update(
-            {
-                sensor_name_nomad: {
-                    # "model": "your_field_here",
-                    # "name": sensor_name_nomad,
-                    # "sensor_id": sensor_name.split(" ")[0],
-                    # "attached_to": sensor_name, # TODO this information is important!
-                    # "measured_property": ,
-                    # "type": sensor_type,
-                    # "notes": "TE_1_K air 155 mm over crucible",
-                    # "unit": self.unit[sensor_name],  # TODO
-                    "emissivity": self.emissivity,
-                    "transmissivity": self.transmissivity,
-                    "t90": self.t90,
-                    "value_timestamp_rel": "#/data/value_timestamp_rel",
-                    "value_timestamp_abs": "#/data/value_timestamp_abs",
-                }
-            }
-        )
-        if "comment" in self.config:
-            data[sensor_name_nomad].update({"comment": self.config["comment"]})
-        sensor_schema = deepcopy(sensor_schema_template)
-        sensor_schema["section"]["quantities"]["value_log"]["m_annotations"]["tabular"][
-            "name"
-        ] = "Temperature"
-        definitions["sections"]["Sensors_list"]["sub_sections"].update(
-            {sensor_name_nomad: sensor_schema}
-        )
-        nomad_dict = {
-            "definitions": definitions,
-            "data": data,
-        }
-        with open(f"{directory}/{self.name}.archive.yaml", "w", encoding="utf-8") as f:
-            yaml.safe_dump(nomad_dict, f, sort_keys=False)
 
-    def save_measurement(self, time_abs, time_rel, sampling):
-        """Write measurement data to file.
+        # Group box with emissivity, transmissivity, ...
+        self.group_box_parameter = QGroupBox("Pyrometer configuration")
+        self.group_box_parameter_layout = QVBoxLayout()
+        self.group_box_parameter.setLayout(self.group_box_parameter_layout)
+        self.parameter_layout.addWidget(self.group_box_parameter)
+        self.parameter_layout.setAlignment(self.group_box_parameter, Qt.AlignTop)
+
+        row_layout = QHBoxLayout()  # Horizontales Layout für die Zeile
+
+        # Text vor dem QLineEdit-Feld
+        lbl_emissivity_label_before = QLabel(f"{self.sensor_name} emissivity:\t")
+        lbl_emissivity_label_before.setFont(QFont("Times", 12))
+        row_layout.addWidget(lbl_emissivity_label_before)
+
+        # QLineEdit Feld
+        validator = QDoubleValidator(0.0, 100.0, 1, self)
+        validator.setNotation(QDoubleValidator.StandardNotation)
+        self.line_edit_e = QLineEdit(self)
+        self.line_edit_e.setFont(QFont("Times", 12))
+        self.line_edit_e.setValidator(validator)
+        self.line_edit_e.setFixedWidth(80)  # Feste Breite
+        self.line_edit_e.setAlignment(Qt.AlignRight)  # Text zentrieren
+        self.line_edit_e.setPlaceholderText(f"{pyrometer.emissivity}")
+        row_layout.addWidget(self.line_edit_e)
+
+        # Text nach dem QLineEdit-Feld
+        self.label_after = QLabel("%")
+        self.label_after.setFont(QFont("Times", 12))
+        row_layout.addWidget(self.label_after)
+
+        # Button zum Anpassen
+        self.adjust_button = QPushButton("Change", self)
+        self.pyrometer = pyrometer
+        self.adjust_button.clicked.connect(self.adjust_e)
+        row_layout.addWidget(self.adjust_button)
+
+        self.group_box_parameter_layout.addLayout(row_layout) # Zeile zum Hauptlayout hinzufügen
+
+        ### transmissivity ###
+        row_layout = QHBoxLayout()
+
+         # Text vor dem QLineEdit-Feld
+        lbl_transmissivity_label_before = QLabel(f"{self.sensor_name} transmissivity:\t")
+        lbl_transmissivity_label_before.setFont(QFont("Times", 12))
+        row_layout.addWidget(lbl_transmissivity_label_before)
+
+        # QLineEdit Feld
+        validator = QDoubleValidator(0.0, 100.0, 1, self)
+        validator.setNotation(QDoubleValidator.StandardNotation)
+        self.line_edit_t = QLineEdit(self)
+        self.line_edit_t.setFont(QFont("Times", 12))
+        self.line_edit_t.setValidator(validator)
+        self.line_edit_t.setFixedWidth(80)  # Feste Breite
+        self.line_edit_t.setAlignment(Qt.AlignRight)  # Text zentrieren
+        self.line_edit_t.setPlaceholderText(f"{pyrometer.transmissivity}")
+        row_layout.addWidget(self.line_edit_t)
+
+        # Text nach dem QLineEdit-Feld
+        self.label_after = QLabel("%")
+        self.label_after.setFont(QFont("Times", 12))
+        row_layout.addWidget(self.label_after)
+
+        # Button zum Anpassen
+        self.adjust_button = QPushButton("Change", self)
+        self.adjust_button.clicked.connect(self.adjust_t)
+        row_layout.addWidget(self.adjust_button)
+
+        self.group_box_parameter_layout.addLayout(row_layout) # Zeile zum Hauptlayout hinzufügen
+
+    def adjust_e(self):
+        new_emissivity = float(self.line_edit_e.text())/100
+        if new_emissivity:
+            for retryNr in range(5):
+                try:
+                    self.pyrometer.set_emissivity(new_emissivity)
+                    self.line_edit_e.setText("")
+                    sleep(0.1)
+                    self.line_edit_e.setPlaceholderText(str(self.pyrometer.emissivity))
+                    break
+                except:
+                    retryNr = retryNr +1
+                    logger.info(f"{self.sensor_name}: changing of emissivity not possible. trying again. {retryNr}. Time.")
+                    self.line_edit_e.setText("")
+                sleep(0.01)
+    
+    def adjust_t(self):
+        new_transmissivity = float(self.line_edit_t.text())/100
+        if new_transmissivity:
+            for retryNr in range(5):
+                try:
+                    self.pyrometer.set_transmissivity(new_transmissivity)
+                    self.line_edit_t.setText("")
+                    sleep(0.1)
+                    self.line_edit_t.setPlaceholderText(str(self.pyrometer.transmissivity))
+                    break
+                except:
+                    retryNr = retryNr +1
+                    logger.info(f"{self.sensor_name}: changing of transmissivity not possible. trying again. {retryNr}. Time.")
+                    self.line_edit_t.setText("")
+                sleep(0.01)
+
+    def set_initialization_data(self, sampling):
+        """Update label with sampling data (used before recording is
+        started).
 
         Args:
-            time_abs (datetime): measurement timestamp.
-            time_rel (float): relative time of measurement.
-            sampling (float): temperature, as returned from sample()
+            sampling (float): temperature value
         """
-        timediff = (
-            datetime.datetime.now(datetime.timezone.utc).astimezone() - time_abs
-        ).total_seconds()
-        if timediff > 1:
-            logger.warning(
-                f"{self.name} save_measurement: time difference between event and saving of {timediff} seconds for samplint timestep {time_abs.isoformat(timespec='milliseconds').replace('T', ' ')} - {time_rel}"
-            )
-        self.meas_data.append(sampling)
-        line = f"{time_abs.isoformat(timespec='milliseconds').replace('T', ' ')},{time_rel},{sampling},\n"
-        with open(self.filename, "a", encoding="utf-8") as f:
-            f.write(line)
+        self.set_label(self.sensor_name, sampling)
+
+    def set_measurement_data(self, rel_time, meas_data):
+        """Update plot and labels with measurement data (used after
+        recording was started).
+
+        Args:
+            rel_time (list): relative time of measurement data.
+            meas_data (list): measurement time series
+        """
+        self.set_data(self.sensor_name, rel_time, meas_data)
