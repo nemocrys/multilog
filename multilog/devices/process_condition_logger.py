@@ -26,14 +26,18 @@ class ProcessConditionLogger:
         self.meas_data = {}
         self.condition_units = {}
         for condition in config:
-            default = ""
-            if "default" in config[condition]:
-                default = config[condition]["default"]
-            self.meas_data.update({condition: default})
-            if "unit" in config[condition]:
-                self.condition_units.update({condition: config[condition]["unit"]})
-            else:
-                self.condition_units.update({condition: ""})
+            try:
+                if condition != "skip":
+                    default = ""
+                    if "default" in config[condition]:
+                        default = config[condition]["default"]
+                    self.meas_data.update({condition: default})
+                    if "unit" in config[condition]:
+                        self.condition_units.update({condition: config[condition]["unit"]})
+                    else:
+                        self.condition_units.update({condition: ""})
+            except:
+                logger.warning(f"Condition {condition} is not formatted correctly; skip init", exc_info=True)
         self.last_meas_data = deepcopy(self.meas_data)
 
     def init_output(self, directory="./"):
