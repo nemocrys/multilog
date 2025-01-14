@@ -48,9 +48,9 @@ class Vifcon_gaseWidget(QWidget):
         self.flow_widget.set_label("MFC26", sampling["MFC26"])
         self.flow_widget.set_label("MFC27", sampling["MFC27"])
 
-        self.pressure_widget.set_label("DM21", sampling["DM21"])
-        self.pressure_widget.set_label("PP21", sampling["PP21"])
-        self.pressure_widget.set_label("PP22", sampling["PP22"])
+        self.pressure_widget.set_label("DM21", "{:.2E}".format(sampling["DM21"]))
+        self.pressure_widget.set_label("PP21", "{:.2E}".format(sampling["PP21"]))
+        self.pressure_widget.set_label("PP22", "{:.2E}".format(sampling["PP22"]))
         
         self.freq_widget.set_label("PP22I", sampling["PP22I"])
 
@@ -68,9 +68,9 @@ class Vifcon_gaseWidget(QWidget):
         self.flow_widget.set_data("MFC26", rel_time, meas_data["MFC26"])
         self.flow_widget.set_data("MFC27", rel_time, meas_data["MFC27"])
 
-        self.pressure_widget.set_data("DM21", rel_time, meas_data["DM21"])
-        self.pressure_widget.set_data("PP21", rel_time, meas_data["PP21"])
-        self.pressure_widget.set_data("PP22", rel_time, meas_data["PP22"])
+        self.pressure_widget.set_data("DM21", rel_time, "{:.2E}".format(meas_data["DM21"]))
+        self.pressure_widget.set_data("PP21", rel_time, "{:.2E}".format(meas_data["PP21"]))
+        self.pressure_widget.set_data("PP22", rel_time, "{:.2E}".format(meas_data["PP22"]))
         self.freq_widget.set_data("PP22I", rel_time, meas_data["PP22I"])
 
 
