@@ -27,10 +27,10 @@ class Vifcon_generatorWidget(QWidget):
         self.layout.addWidget(self.tab_widget)
         self.tab_widget.setStyleSheet("QTabBar {font-size: 14pt; color: blue;}")
 
-        self.percantage_widget = PlotWidget(["power-actual", "power-target","voltage-actual", "voltage-target","current-actual", "current-target"], "Percent", "%")
+        self.percantage_widget = PlotWidget(["power-actual", "power-target","voltage-actual", "voltage-target","current-actual", "current-target"], "Different Units", "-")
         self.tab_widget.addTab(self.percantage_widget, "Power, Voltage, Current")
 
-        self.freq_widget = PlotWidget(["frequency"], "Freq", "%")
+        self.freq_widget = PlotWidget(["frequency"], "Freq", "-")
         self.tab_widget.addTab(self.freq_widget, "Freq")
 
 
