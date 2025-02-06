@@ -38,7 +38,7 @@ class Vifcon_gase:
         # send trigger
         try:
             self.s.send(bytes(self.name, 'UTF-8'))
-            received = self.s.recv(1024)
+            received = self.s.recv(2048)
             received = received.decode("utf-8")
             data = json.loads(received)
         except Exception as e:
