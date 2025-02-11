@@ -333,11 +333,8 @@ devices:
       30.0: 7
 
   Dias-Pyrometer:  # Pyrometer
-<<<<<<< Updated upstream
-    #Port-Vifcon: 56000
-=======
     skip: 1
->>>>>>> Stashed changes
+    #Port-Vifcon: 56000
     serial-interface:
       port: /dev/ttyUSB1
       baudrate: 19200
