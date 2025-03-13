@@ -4,3 +4,5 @@ PyQT5
 pyqtgraph
 pyserial
 PyYAML
+
+typing_extensions        4.7.1

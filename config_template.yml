@@ -222,6 +222,25 @@ devices:
       #IP: "localhost" # as string
       #Port: 50000
 
+  Keysight_DSOX1204G:
+    skip: 1
+    #Port-Vifcon: 51000
+    # comment: your comment for nomad ELN
+    Bib_Use: usbtmc                                             # pyvisa oder usbtmc - Used library
+    Adress: USB0::0x2A8D::0x0396::CN61367122::0::INSTR          # Pyvisa Adresse
+    VID:  0x2a8d                                                # usbtmc Adresse
+    PID:  0x0396                                                # usbtmc Adresse
+    Nan-Limit_V: 10000                                          # If the value exceeds the configured value, Nan will be displayed in the plot! Voltage
+    Nan-Limit_f: 1000000                                        # If the value exceeds the configured value, Nan will be displayed in the plot! Frequency
+    channel_active:
+      1: True
+      2: False
+      3: False
+      4: False
+    #tcp-interface:
+      #IP: "localhost" # as string
+      #Port: 50000
+
 #---------------------------------------
 #              Pyrometers 
 #---------------------------------------

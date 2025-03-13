@@ -120,6 +120,7 @@ class Controller(QObject):
         from .devices.vifcon_achsen import Vifcon_achsen
         from .devices.vifcon_gase import Vifcon_gase
         from .devices.vifcon_generator import Vifcon_generator
+        from .devices.keysight import Keysight
 
         from .devices.vifcon import Vifcon
 
@@ -136,6 +137,7 @@ class Controller(QObject):
         from .view.vifcon_achsen import Vifcon_achsenWidget
         from .view.vifcon_gase import Vifcon_gaseWidget
         from .view.vifcon_generator import Vifcon_generatorWidget
+        from .view.keysight import KeysightWidget
 
         self.sampling_started = False  # this will to be true once "start" was clicked
 
@@ -228,6 +230,9 @@ class Controller(QObject):
                 elif "Dias" in device_name:
                     device = PyrometerDias(self.config["devices"][device_name], device_name)
                     widget = PyrometerDiasWidget(device)
+                elif "Keysight" in device_name:
+                    device = Keysight(self.config["devices"][device_name], device_name)
+                    widget = KeysightWidget(device)
                 #######################
                 # add new devices here!
                 #######################
