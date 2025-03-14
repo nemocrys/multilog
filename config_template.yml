@@ -3,7 +3,7 @@ settings:
   dt-camera: 250  # [ms] sampling time step for cameras. Will be used only after clicking "Start", all images get saved. min: 150 ms (can be lower with direct network card workflow)
   dt-camera-update: 250  # [ms] frame update time step in camera-view. Will also be used before clicking "Start", no images get saved. min: 150 ms (can be lower with direct network card workflow)
   dt-init: 1000  # [ms] sampling time step for devices, other then cameras; Will be used only after clicking "Start"
-  Multilog_Link: 1 # Multilog-Verbindung: True - On, False - Off
+  Multilog_Link: 0 # Multilog-Verbindung: True - On, False - Off
   IP-Vifcon: "localhost"
 
 logging:
@@ -408,6 +408,9 @@ devices:
       Rot1: # name for multilog
         Name: "Rot1" # has to correspond to "write_triger" in vifcon motor device
         Port: 57201 # has to correspond to "write_port" in vifcon motor device; Port numbers for multiple devices from vifcon must increase sequentially e.g., 57101, 57102, 57202. 
+      Rot2: # name for multilog
+        Name: "Rot2" # has to correspond to "write_triger" in vifcon motor device
+        Port: 57202 # has to correspond to "write_port" in vifcon motor device; Port numbers for multiple devices from vifcon must increase sequentially e.g., 57101, 57102, 57202. 
       Pi1: # name for multilog
         Name: "Pi1" # has to correspond to "write_triger" in vifcon motor device
         Port: 57301 # has to correspond to "write_port" in vifcon motor device; Port numbers for multiple devices from vifcon must increase sequentially e.g., 57101, 57102, 57202. 
