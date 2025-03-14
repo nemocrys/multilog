@@ -346,9 +346,10 @@ class Controller(QObject):
 
     def exit(self):
         """This is executed when the exit button is clicked."""
-        self.LinkVifconThread.quit()
-        if not self.VifconLink.done:
-            self.VifconLink.ende()
+        if self.VifconNutzung:
+            self.LinkVifconThread.quit()
+            if not self.VifconLink.done:
+                self.VifconLink.ende()
         
         logger.info("Stopping sampling")
         self.timer_update_camera.stop()
