@@ -28,6 +28,7 @@ Currently, the following devices are supported:
 - Optris IP-640 IR camera (USB)
 - Eurotherm controller (RS232)
 - IFM flowmeter (Ethernet)
+- Keysight InfiniiVision DSOX1204G Osxilloscope
 
 Additional devices may be included in a flexible manner.
 
@@ -79,6 +80,15 @@ For the Keithley DAQ6510 multimeter, the following main settings are available:
 - serial-interface: configuration for [pyserial](https://pyserial.readthedocs.io/en/latest/pyserial_api.html#serial.Serial)
 - settings: currently, some channel-specific settings are defined globally. This will be changed in the future.
 - channels: flexible configuration of the device's channels for measurement of temperatures with thermocouples / Pt100 / Pt1000 and ac / dc voltages. Conversion of voltages into different units is possible (see "rogowski" in config_template.yml).
+
+#### DSOX1204G oscilloscope
+
+The oscilloscope uses an USB serial connection. The following configurations are available:
+- connection (usbtmc or pyvisa). This specifies which communication is used for sending the serial commands
+- address: visa-address of the connected device (only needed for pyvisa connection)
+- VID and PID: usbtmc ids of the connected device (only needed for usbtmc connection)
+- nan-limit_*: If the value exceeds the configured value, Nan will be displayed in the plot! 
+- channel_active: specify which channels should be modified. DCV, ACV and frequency are measured for all active channels
 
 #### IFM-flowmeter
 
@@ -135,6 +145,23 @@ multilog runs with python >= 3.8 on both Linux and Windows (Mac not tested). The
 - PyYAML
 
 Depending on the applied devices multilog needs various additional python packages. A missing device-specific dependency leads to a warning. Always check the log if something is not working as expected!
+
+#### DSOX1204G oscilloscope
+
+Here pyvisa or usbtmc connection can be used when the device is connected via usb.
+
+**pyvisa connection**: Install the IO library suite from Keysight. This works for Linux and Windows. Pyvisa address can be found in the software. https://www.keysight.com/de/de/lib/software-detail/computer-software/io-libraries-suite-downloads-2175637.html
+
+**usbtmc connection**:
+
+Linux:
+Follow the instructions under **udev** to install python-usbtmc. The ids VID and PID have to be extracted from `lsusb` output
+
+Windows:
+- python-usbtmc
+- pyusb
+- [libusb](https://sourceforge.net/projects/libusb-win32/files/libusb-win32-releases/1.2.6.0/) for Windows (tested with _libusb-win32-bin-1.2.6.0.zip_ )
+- Requires an INF file to set up the usb driver. See [instructions](https://www.smallcab.net/download/programme/xm-07/how-to-install-libusb-driver.pdf).
 
 #### IFM-flowmeter
 

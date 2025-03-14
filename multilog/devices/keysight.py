@@ -34,12 +34,12 @@ class Keysight:
         """
         logger.info(f"Initializing Keysight device '{name}'")
         self.config = config
-        self.python_Bib_serial = config["Bib_Use"]
+        self.python_Bib_serial = config["connection"]
         self.device_vid = config["VID"]
         self.device_pid = config["PID"]
-        self.device_ad  = config["Adress"]
-        self.device_NAN_Limit   = config['Nan-Limit_V']
-        self.device_NAN_Limit_f = config['Nan-Limit_f']
+        self.device_ad  = config["address"]
+        self.device_NAN_Limit   = config['nan-limit_V']
+        self.device_NAN_Limit_f = config['nan-limit_f']
         self.name = name
         self.latestSample = np.nan
 
