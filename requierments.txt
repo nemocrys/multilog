@@ -1,6 +1,0 @@
-matplotlib
-numpy
-PyQT5
-pyqtgraph
-pyserial
-PyYAML
