@@ -320,15 +320,24 @@ class PlotWidget(QSplitter):
             y (list): y values
         """
         # PyQtGraph workaround for NaN from instrument
-        x = np.array(x)
-        y = np.array(y)
-        con = np.isfinite(y)
+        
+        try: # "regualar" methode
+            x   = np.array(x)
+            y   = np.array(y)
+            con = np.isfinite(y)
+        except: # "special" methode to catch error for X.XXE+YY notation
+            x   = np.array(x)
+            y   = np.array(y, dtype=float)
+            con = np.isfinite(y)
+
         if len(y) >= 2 and y[-2:-1] != np.nan:
             y_ok = y[-2:-1]
             y[~con] = y_ok
         self.lines[sensor].setData(x, y, connect=np.logical_and(con, np.roll(con, -1)))
         if self.unit == "-":
             self.sensor_value_labels[sensor].setText(f"{y[-1]:.3f}")
+        elif self.unit == "mbar": 
+            self.sensor_value_labels[sensor].setText(f"{y[-1]:.3E} {self.unit}") # exeption for vifcon_gase to show the scientific format
         else:
             self.sensor_value_labels[sensor].setText(f"{y[-1]:.3f} {self.unit}")
 
@@ -341,7 +350,7 @@ class PlotWidget(QSplitter):
         """
         if self.unit == "-" or self.unit == "":
             self.sensor_value_labels[sensor].setText(f"{val:.3f}")
-        elif self.unit == "mbar": # exeption for vifcon_gase to show the scientific format
-            self.sensor_value_labels[sensor].setText(val)
+        elif self.unit == "mbar": 
+            self.sensor_value_labels[sensor].setText(f"{val:.3E} {self.unit}") # exeption for vifcon_gase to show the scientific format
         else:
             self.sensor_value_labels[sensor].setText(f"{val:.3f} {self.unit}")

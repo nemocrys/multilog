@@ -1,3 +1,4 @@
+from calendar import day_abbr
 import logging
 import datetime
 import socket
@@ -44,11 +45,12 @@ class Vifcon_gase:
         except Exception as e:
             logger.exception(f"Could not sample {self.name}.")
             data = {"MFC24": np.nan, "MFC25": np.nan, "MFC26": np.nan, "MFC27": np.nan, "DM21": np.nan, "PP21": np.nan, "PP22": np.nan, "PP22I": np.nan}
-        
-        # change pressure data to np.nan if value is to low
-        if data["PP21"] <= 1e-5: data["PP21"] = np.nan
-        if data["PP22"] <= 1e-5: data["PP22"] = np.nan
-        if data["DM21"] <= 1e-5: data["DM21"] = np.nan
+
+        # change pressure data to np.nan if value is to low and is not 0
+        if data["PP21"] <= 1e-5 and data["PP21"] != 0: data["PP21"] = np.nan
+        if data["PP22"] <= 1e-5 and data["PP22"] != 0: data["PP22"] = np.nan
+        if data["DM21"] <= 1e-5 and data["DM21"] != 0: data["DM21"] = np.nan
+
         return data
 
     def save_measurement(self, time_abs, time_rel, sampling):
