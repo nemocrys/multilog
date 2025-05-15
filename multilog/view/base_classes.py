@@ -272,8 +272,8 @@ class PlotWidget(QSplitter):
             y_i = round(mousePoint.y(),3)
 
             self.lbl_plot_x.setText(f"{x_i} s")
-            if self.unit != "-": lbl_plot_y.setText(f"{y_i} {self.unit}")
-            else: lbl_plot_y.setText(f"{y_i}")
+            if self.unit != "-": self.lbl_plot_y.setText(f"{y_i} {self.unit}")
+            else: self.lbl_plot_y.setText(f"{y_i}")
 
     def update_autoscale_x(self):
         if self.cb_autoscale_x.isChecked():
