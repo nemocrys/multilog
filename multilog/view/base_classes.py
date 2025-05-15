@@ -151,8 +151,10 @@ class PlotWidget(QSplitter):
         self.y_min = 0
         self.y_max = 1
 
+        self.plot.scene().sigMouseMoved.connect(self.mouseMovedEvent) # Update data if cursor is moved
+
         # setup controls for figure scaling
-        self.group_box_plot = QGroupBox("Plot confiuration")
+        self.group_box_plot = QGroupBox("Plot configuration")
         # self.group_box_plot.setObjectName('Group')
         # self.group_box_plot.setStyleSheet(
         #     'QGroupBox#Group{border: 1px solid black; color: black; \
@@ -177,7 +179,7 @@ class PlotWidget(QSplitter):
         self.edit_x_max.setFont(QFont("Times", 14, QFont.Bold))
         self.edit_x_max.setText(str(self.x_max))
         self.edit_x_max.setEnabled(False)
-        self.cb_autoscale_x = QCheckBox("Autoscale X")
+        self.cb_autoscale_x = QCheckBox("Autoscale x")
         self.cb_autoscale_x.setChecked(True)
         self.cb_autoscale_x.setFont(QFont("Times", 12))
         self.cb_autoscale_x.setEnabled(True)
@@ -200,6 +202,18 @@ class PlotWidget(QSplitter):
         self.cb_autoscale_y.setFont(QFont("Times", 12))
         self.cb_autoscale_y.setEnabled(True)
 
+        self.lbl_plot_text = QLabel(f"Current Value:")
+        self.lbl_plot_text.setFont(QFont("Times", 12))
+        self.lbl_plot_text.setAlignment(Qt.AlignRight)
+
+        self.lbl_plot_x = QLabel("x")
+        self.lbl_plot_x.setFont(QFont("Times", 12))
+        self.lbl_plot_x.setAlignment(Qt.AlignRight)
+
+        self.lbl_plot_y = QLabel("y")
+        self.lbl_plot_y.setFont(QFont("Times", 12))
+        self.lbl_plot_y.setAlignment(Qt.AlignRight)
+
         self.group_box_plot_layout.addWidget(self.lbl_x_edit, 0, 0, 1, 1)
         self.group_box_plot_layout.setAlignment(self.lbl_x_edit, Qt.AlignBottom)
         self.group_box_plot_layout.addWidget(self.edit_x_min, 0, 1, 1, 1)
@@ -213,6 +227,9 @@ class PlotWidget(QSplitter):
         self.group_box_plot_layout.addWidget(self.edit_y_min, 1, 1, 1, 1)
         self.group_box_plot_layout.addWidget(self.edit_y_max, 1, 2, 1, 1)
         self.group_box_plot_layout.addWidget(self.cb_autoscale_y, 1, 3, 1, 3)
+        self.group_box_plot_layout.addWidget(self.lbl_plot_text, 2, 0, 1, 1)
+        self.group_box_plot_layout.addWidget(self.lbl_plot_x, 2, 1, 1, 1)
+        self.group_box_plot_layout.addWidget(self.lbl_plot_y, 2, 2, 1, 1)
 
         self.cb_autoscale_x.clicked.connect(self.update_autoscale_x)
         self.cb_autoscale_y.clicked.connect(self.update_autoscale_y)
@@ -246,6 +263,17 @@ class PlotWidget(QSplitter):
             lbl_value.setStyleSheet(f"color: {COLORS[i]}")
             self.group_box_sensors_layout.addWidget(lbl_value, i, 1, 1, 1)
             self.sensor_value_labels.update({sensors[i]: lbl_value})
+
+    def mouseMovedEvent(self, pos):
+        """updates x and y value of cursor."""
+        if self.plot.sceneBoundingRect().contains(pos):
+            mousePoint = self.plot.getViewBox().mapSceneToView(pos)
+            x_i = round(mousePoint.x())
+            y_i = round(mousePoint.y(),3)
+
+            self.lbl_plot_x.setText(f"{x_i} s")
+            if self.unit != "-": lbl_plot_y.setText(f"{y_i} {self.unit}")
+            else: lbl_plot_y.setText(f"{y_i}")
 
     def update_autoscale_x(self):
         if self.cb_autoscale_x.isChecked():
@@ -321,11 +349,11 @@ class PlotWidget(QSplitter):
         """
         # PyQtGraph workaround for NaN from instrument
         
-        try: # "regualar" methode
+        try: # normal method
             x   = np.array(x)
             y   = np.array(y)
             con = np.isfinite(y)
-        except: # "special" methode to catch error for X.XXE+YY notation
+        except: # method to catch error for X.XXE+YY notation
             x   = np.array(x)
             y   = np.array(y, dtype=float)
             con = np.isfinite(y)
