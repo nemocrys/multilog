@@ -153,6 +153,12 @@ class PlotWidget(QSplitter):
 
         self.plot.scene().sigMouseMoved.connect(self.mouseMovedEvent) # Update data if cursor is moved
 
+
+        self.lbl_cursorPos = QLabel(f"Cursor Value: ")
+        self.lbl_cursorPos.setFont(QFont("Times", 14))
+        self.lbl_cursorPos.setAlignment(Qt.AlignLeft)
+        self.graphics_layout.addWidget(self.lbl_cursorPos)
+
         # setup controls for figure scaling
         self.group_box_plot = QGroupBox("Plot configuration")
         # self.group_box_plot.setObjectName('Group')
@@ -202,17 +208,6 @@ class PlotWidget(QSplitter):
         self.cb_autoscale_y.setFont(QFont("Times", 12))
         self.cb_autoscale_y.setEnabled(True)
 
-        self.lbl_plot_text = QLabel(f"Current Value:")
-        self.lbl_plot_text.setFont(QFont("Times", 12))
-        self.lbl_plot_text.setAlignment(Qt.AlignRight)
-
-        self.lbl_plot_x = QLabel("x")
-        self.lbl_plot_x.setFont(QFont("Times", 12))
-        self.lbl_plot_x.setAlignment(Qt.AlignRight)
-
-        self.lbl_plot_y = QLabel("y")
-        self.lbl_plot_y.setFont(QFont("Times", 12))
-        self.lbl_plot_y.setAlignment(Qt.AlignRight)
 
         self.group_box_plot_layout.addWidget(self.lbl_x_edit, 0, 0, 1, 1)
         self.group_box_plot_layout.setAlignment(self.lbl_x_edit, Qt.AlignBottom)
@@ -227,9 +222,6 @@ class PlotWidget(QSplitter):
         self.group_box_plot_layout.addWidget(self.edit_y_min, 1, 1, 1, 1)
         self.group_box_plot_layout.addWidget(self.edit_y_max, 1, 2, 1, 1)
         self.group_box_plot_layout.addWidget(self.cb_autoscale_y, 1, 3, 1, 3)
-        self.group_box_plot_layout.addWidget(self.lbl_plot_text, 2, 0, 1, 1)
-        self.group_box_plot_layout.addWidget(self.lbl_plot_x, 2, 1, 1, 1)
-        self.group_box_plot_layout.addWidget(self.lbl_plot_y, 2, 2, 1, 1)
 
         self.cb_autoscale_x.clicked.connect(self.update_autoscale_x)
         self.cb_autoscale_y.clicked.connect(self.update_autoscale_y)
@@ -271,9 +263,8 @@ class PlotWidget(QSplitter):
             x_i = round(mousePoint.x())
             y_i = round(mousePoint.y(),3)
 
-            self.lbl_plot_x.setText(f"{x_i} s")
-            if self.unit != "-": self.lbl_plot_y.setText(f"{y_i} {self.unit}")
-            else: self.lbl_plot_y.setText(f"{y_i}")
+            if self.unit != "-": self.lbl_cursorPos.setText(f"Cursor Value: {x_i} s, {y_i} {self.unit}")
+            else:                self.lbl_cursorPos.setText(f"Cursor Value: {x_i} s, {y_i}")
 
     def update_autoscale_x(self):
         if self.cb_autoscale_x.isChecked():
