@@ -137,9 +137,13 @@ class PlotWidget(QSplitter):
         # self.plot.getAxis('top').setTicks([x2_ticks,[]])  # TODO set that!
         self.plot.enableAutoRange(axis="x")
         self.plot.enableAutoRange(axis="y")
-        self.pens = []
+        self.pens   = []
+        self.maPens = []
+
         for color in COLORS:
             self.pens.append(pg.mkPen(color=cnames[color]))
+            self.maPens.append(pg.mkPen(color=cnames[color], style=Qt.DashLine))
+
         self.lines = {}
         for i in range(len(sensors)):
             line = self.plot.plot([], [], pen=self.pens[i])
@@ -230,6 +234,24 @@ class PlotWidget(QSplitter):
 
         self.sensor_name_labels = {}
         self.sensor_value_labels = {}
+
+        # moving average
+        self.mas = {}
+        for i in range(len(sensors)):
+            maPen = self.maPens[i]
+            ma    = self.plot.plot([], [], pen=maPen)
+            self.mas.update({sensors[i]: ma})
+
+        # Enable / Disable moving average
+        self.enableMas = {}
+        for i in range(len(sensors)):
+            self.enableMas.update({sensors[i]: True})
+
+        # Window Size
+        self.windowSize = {}
+        for i in range(len(sensors)):
+            self.windowSize.update({sensors[i]: 5}) # all windows get inited with a size of 5
+        
         for i in range(len(sensors)):
             lbl_name = QLabel()
             lbl_name.setText(f"{sensors[i]}:")
@@ -245,6 +267,24 @@ class PlotWidget(QSplitter):
             lbl_value.setFont(QFont("Times", 12, QFont.Bold))
             lbl_value.setStyleSheet(f"color: {COLORS[i]}")
             self.group_box_sensors_layout.addWidget(lbl_value, i, 1, 1, 1)
+
+            self.cb_mavg = QCheckBox("Moving avg. window size [points]: ")
+            self.cb_mavg.setChecked(True)
+            self.cb_mavg.setFont(QFont("Times", 12, QFont.Bold))
+            self.cb_mavg.setStyleSheet(f"color: {COLORS[i]}")
+            self.cb_mavg.setEnabled(True)
+            self.cb_mavg.clicked.connect(lambda state, x=sensors[i]: self.update_mavg(x, state))
+            self.group_box_sensors_layout.addWidget(self.cb_mavg, i, 2, 1, 1)
+
+            self.edit_mavg = LineEdit()
+            self.edit_mavg.setFixedWidth(50)
+            self.edit_mavg.setFont(QFont("Times", 14, QFont.Bold))
+            self.edit_mavg.setStyleSheet(f"color: black")
+            self.edit_mavg.setText(str(self.windowSize[sensors[i]]))
+            self.edit_mavg.setEnabled(True)
+            self.edit_mavg.editingFinished.connect(lambda e=self.edit_mavg, x=sensors[i]: self.edit_mavg_changed(x, e.text()))
+            self.group_box_sensors_layout.addWidget(self.edit_mavg, i, 3, 1, 1)
+
             self.sensor_value_labels.update({sensors[i]: lbl_value})
 
     def update_autoscale_x(self):
@@ -297,6 +337,20 @@ class PlotWidget(QSplitter):
         self.edit_y_max.clearFocus()
         self.plot.setYRange(self.y_min, self.y_max, padding=self.padding)
 
+    def update_mavg(self, index, state):
+        if state == 1:
+            self.enableMas[index] = True
+        else:
+            self.enableMas[index] = False
+
+    def edit_mavg_changed(self, index, text):
+        try:
+            inputValue = int(text)
+            if inputValue < 2: inputValue = 2
+        except: inputValue = self.windowSize[index] # reset to old Value
+        self.windowSize[index] = inputValue
+        self.edit_mavg.setStyleSheet("color: black")
+
     def calc_x2_ticks(self):  # TODO
         """Not implemented. Intended to be used for a datetime axis."""
         # # calculate the datetime axis at the top x axis
@@ -326,7 +380,19 @@ class PlotWidget(QSplitter):
         if len(y) >= 2 and y[-2:-1] != np.nan:
             y_ok = y[-2:-1]
             y[~con] = y_ok
+
         self.lines[sensor].setData(x, y, connect=np.logical_and(con, np.roll(con, -1)))
+
+        # plot moving average
+        if self.windowSize[sensor] <= len(y):
+            yAvg = self.movingAvg(data=y, sensor=sensor)
+            xAvgMinus = self.windowSize[sensor] - 1
+            xAvg = np.array(x[:-xAvgMinus])
+            if self.enableMas[sensor] == True:
+                try: self.mas[sensor].setData(xAvg, yAvg)
+                except: logging.debug("Displaying moving average not possible")
+            else:  self.mas[sensor].clear()
+
         if self.unit == "-":
             self.sensor_value_labels[sensor].setText(f"{y[-1]:.3f}")
         else:
@@ -345,3 +411,7 @@ class PlotWidget(QSplitter):
             self.sensor_value_labels[sensor].setText(val)
         else:
             self.sensor_value_labels[sensor].setText(f"{val:.3f} {self.unit}")
+
+    def movingAvg(self, data, sensor):
+        weights = np.ones(self.windowSize[sensor]) / self.windowSize[sensor]
+        return np.convolve(data, weights, mode='valid')
