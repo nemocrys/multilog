@@ -18,7 +18,7 @@ import pyqtgraph as pg
 
 logger = logging.getLogger(__name__)
 COLORS = [
-    "red",
+    #"red",
     "green",
     "cyan",
     "magenta",
@@ -155,8 +155,16 @@ class PlotWidget(QSplitter):
         self.y_min = 0
         self.y_max = 1
 
+        self.plot.scene().sigMouseMoved.connect(self.mouseMovedEvent) # Update data if cursor is moved
+
+
+        self.lbl_cursorPos = QLabel(f"Cursor Value: ")
+        self.lbl_cursorPos.setFont(QFont("Times", 14))
+        self.lbl_cursorPos.setAlignment(Qt.AlignLeft)
+        self.graphics_layout.addWidget(self.lbl_cursorPos)
+
         # setup controls for figure scaling
-        self.group_box_plot = QGroupBox("Plot confiuration")
+        self.group_box_plot = QGroupBox("Plot configuration")
         # self.group_box_plot.setObjectName('Group')
         # self.group_box_plot.setStyleSheet(
         #     'QGroupBox#Group{border: 1px solid black; color: black; \
@@ -181,7 +189,7 @@ class PlotWidget(QSplitter):
         self.edit_x_max.setFont(QFont("Times", 14, QFont.Bold))
         self.edit_x_max.setText(str(self.x_max))
         self.edit_x_max.setEnabled(False)
-        self.cb_autoscale_x = QCheckBox("Autoscale X")
+        self.cb_autoscale_x = QCheckBox("Autoscale x")
         self.cb_autoscale_x.setChecked(True)
         self.cb_autoscale_x.setFont(QFont("Times", 12))
         self.cb_autoscale_x.setEnabled(True)
@@ -203,6 +211,7 @@ class PlotWidget(QSplitter):
         self.cb_autoscale_y.setChecked(True)
         self.cb_autoscale_y.setFont(QFont("Times", 12))
         self.cb_autoscale_y.setEnabled(True)
+
 
         self.group_box_plot_layout.addWidget(self.lbl_x_edit, 0, 0, 1, 1)
         self.group_box_plot_layout.setAlignment(self.lbl_x_edit, Qt.AlignBottom)
@@ -252,6 +261,7 @@ class PlotWidget(QSplitter):
         for i in range(len(sensors)):
             self.windowSize.update({sensors[i]: 5}) # all windows get inited with a size of 5
         
+        self.edit_mavg_dict = {}
         for i in range(len(sensors)):
             lbl_name = QLabel()
             lbl_name.setText(f"{sensors[i]}:")
@@ -283,9 +293,20 @@ class PlotWidget(QSplitter):
             self.edit_mavg.setText(str(self.windowSize[sensors[i]]))
             self.edit_mavg.setEnabled(True)
             self.edit_mavg.editingFinished.connect(lambda e=self.edit_mavg, x=sensors[i]: self.edit_mavg_changed(x, e.text()))
+            self.edit_mavg_dict.update({sensors[i]: self.edit_mavg})
             self.group_box_sensors_layout.addWidget(self.edit_mavg, i, 3, 1, 1)
 
             self.sensor_value_labels.update({sensors[i]: lbl_value})
+
+    def mouseMovedEvent(self, pos):
+        """updates x and y value of cursor."""
+        if self.plot.sceneBoundingRect().contains(pos):
+            mousePoint = self.plot.getViewBox().mapSceneToView(pos)
+            x_i = round(mousePoint.x())
+            y_i = round(mousePoint.y(),3)
+
+            if self.unit != "-": self.lbl_cursorPos.setText(f"Cursor Value: {x_i} s, {y_i} {self.unit}")
+            else:                self.lbl_cursorPos.setText(f"Cursor Value: {x_i} s, {y_i}")
 
     def update_autoscale_x(self):
         if self.cb_autoscale_x.isChecked():
@@ -344,12 +365,15 @@ class PlotWidget(QSplitter):
             self.enableMas[index] = False
 
     def edit_mavg_changed(self, index, text):
-        try:
-            inputValue = int(text)
-            if inputValue < 2: inputValue = 2
-        except: inputValue = self.windowSize[index] # reset to old Value
-        self.windowSize[index] = inputValue
-        self.edit_mavg.setStyleSheet("color: black")
+        try: tempNr = int(text)
+        except: tempNr = self.windowSize[index]
+
+        if tempNr < 2: tempNr = 2 # a value below 2 does not make any sense.
+
+        self.windowSize[index] = tempNr
+
+        self.edit_mavg_dict[index].setText(str(tempNr))
+        self.edit_mavg_dict[index].setStyleSheet("color: black")
 
     def calc_x2_ticks(self):  # TODO
         """Not implemented. Intended to be used for a datetime axis."""
@@ -374,9 +398,16 @@ class PlotWidget(QSplitter):
             y (list): y values
         """
         # PyQtGraph workaround for NaN from instrument
-        x = np.array(x)
-        y = np.array(y)
-        con = np.isfinite(y)
+        
+        try: # normal method
+            x   = np.array(x)
+            y   = np.array(y)
+            con = np.isfinite(y)
+        except: # method to catch error for X.XXE+YY notation
+            x   = np.array(x)
+            y   = np.array(y, dtype=float)
+            con = np.isfinite(y)
+
         if len(y) >= 2 and y[-2:-1] != np.nan:
             y_ok = y[-2:-1]
             y[~con] = y_ok
@@ -391,10 +422,12 @@ class PlotWidget(QSplitter):
             if self.enableMas[sensor] == True:
                 try: self.mas[sensor].setData(xAvg, yAvg)
                 except: logging.debug("Displaying moving average not possible")
-            else:  self.mas[sensor].clear()
+            else: self.mas[sensor].clear()
 
         if self.unit == "-":
             self.sensor_value_labels[sensor].setText(f"{y[-1]:.3f}")
+        elif self.unit == "mbar": 
+            self.sensor_value_labels[sensor].setText(f"{y[-1]:.3E} {self.unit}") # exeption for vifcon_gase to show the scientific format
         else:
             self.sensor_value_labels[sensor].setText(f"{y[-1]:.3f} {self.unit}")
 
@@ -407,8 +440,8 @@ class PlotWidget(QSplitter):
         """
         if self.unit == "-" or self.unit == "":
             self.sensor_value_labels[sensor].setText(f"{val:.3f}")
-        elif self.unit == "mbar": # exeption for vifcon_gase to show the scientific format
-            self.sensor_value_labels[sensor].setText(val)
+        elif self.unit == "mbar": 
+            self.sensor_value_labels[sensor].setText(f"{val:.3E} {self.unit}") # exeption for vifcon_gase to show the scientific format
         else:
             self.sensor_value_labels[sensor].setText(f"{val:.3f} {self.unit}")
 
