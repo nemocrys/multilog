@@ -114,4 +114,4 @@ class PyrometerArrayLumasenseWidget(PlotWidget):
             meas_data (dict): {heat name: measurement time series}
         """
         for sensor in meas_data:
-            self.set_data(sensor, rel_time, meas_data)
+            self.set_data(sensor, rel_time, meas_data[sensor])
