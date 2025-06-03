@@ -282,7 +282,7 @@ class Controller(QObject):
             self.threads.append(thread)
 
         # Multilog Trigger Thread erstellen:
-        self.VifconNutzung = self.config['settings']['Vifcon_Link']
+        self.VifconNutzung = self.config['settings']['Multilog_Link']
         if self.VifconNutzung:
             self.LinkVifconThread = QThread()
             self.VifconLink = Vifcon(ip, port_List, trigger,vifconDevices)

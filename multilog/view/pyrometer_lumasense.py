@@ -40,7 +40,7 @@ class PyrometerLumasenseWidget(PlotWidget):
         row_layout = QHBoxLayout()  # Horizontales Layout für die Zeile
 
         # Text vor dem QLineEdit-Feld
-        lbl_emissivity_label_before = QLabel(f"{self.sensor_name:20} emissivity:      ")
+        lbl_emissivity_label_before = QLabel(f"{self.sensor_name} emissivity:\t")
         lbl_emissivity_label_before.setFont(QFont("Times", 12))
         row_layout.addWidget(lbl_emissivity_label_before)
 
@@ -72,7 +72,7 @@ class PyrometerLumasenseWidget(PlotWidget):
         row_layout = QHBoxLayout()
 
          # Text vor dem QLineEdit-Feld
-        lbl_transmissivity_label_before = QLabel(f"{self.sensor_name:20} transmissivity: ")
+        lbl_transmissivity_label_before = QLabel(f"{self.sensor_name} transmissivity:\t")
         lbl_transmissivity_label_before.setFont(QFont("Times", 12))
         row_layout.addWidget(lbl_transmissivity_label_before)
 

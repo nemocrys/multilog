@@ -151,16 +151,8 @@ class PlotWidget(QSplitter):
         self.y_min = 0
         self.y_max = 1
 
-        self.plot.scene().sigMouseMoved.connect(self.mouseMovedEvent) # Update data if cursor is moved
-
-
-        self.lbl_cursorPos = QLabel(f"Cursor Value: ")
-        self.lbl_cursorPos.setFont(QFont("Times", 14))
-        self.lbl_cursorPos.setAlignment(Qt.AlignLeft)
-        self.graphics_layout.addWidget(self.lbl_cursorPos)
-
         # setup controls for figure scaling
-        self.group_box_plot = QGroupBox("Plot configuration")
+        self.group_box_plot = QGroupBox("Plot confiuration")
         # self.group_box_plot.setObjectName('Group')
         # self.group_box_plot.setStyleSheet(
         #     'QGroupBox#Group{border: 1px solid black; color: black; \
@@ -185,7 +177,7 @@ class PlotWidget(QSplitter):
         self.edit_x_max.setFont(QFont("Times", 14, QFont.Bold))
         self.edit_x_max.setText(str(self.x_max))
         self.edit_x_max.setEnabled(False)
-        self.cb_autoscale_x = QCheckBox("Autoscale x")
+        self.cb_autoscale_x = QCheckBox("Autoscale X")
         self.cb_autoscale_x.setChecked(True)
         self.cb_autoscale_x.setFont(QFont("Times", 12))
         self.cb_autoscale_x.setEnabled(True)
@@ -207,7 +199,6 @@ class PlotWidget(QSplitter):
         self.cb_autoscale_y.setChecked(True)
         self.cb_autoscale_y.setFont(QFont("Times", 12))
         self.cb_autoscale_y.setEnabled(True)
-
 
         self.group_box_plot_layout.addWidget(self.lbl_x_edit, 0, 0, 1, 1)
         self.group_box_plot_layout.setAlignment(self.lbl_x_edit, Qt.AlignBottom)
@@ -255,16 +246,6 @@ class PlotWidget(QSplitter):
             lbl_value.setStyleSheet(f"color: {COLORS[i]}")
             self.group_box_sensors_layout.addWidget(lbl_value, i, 1, 1, 1)
             self.sensor_value_labels.update({sensors[i]: lbl_value})
-
-    def mouseMovedEvent(self, pos):
-        """updates x and y value of cursor."""
-        if self.plot.sceneBoundingRect().contains(pos):
-            mousePoint = self.plot.getViewBox().mapSceneToView(pos)
-            x_i = round(mousePoint.x())
-            y_i = round(mousePoint.y(),3)
-
-            if self.unit != "-": self.lbl_cursorPos.setText(f"Cursor Value: {x_i} s, {y_i} {self.unit}")
-            else:                self.lbl_cursorPos.setText(f"Cursor Value: {x_i} s, {y_i}")
 
     def update_autoscale_x(self):
         if self.cb_autoscale_x.isChecked():
@@ -339,24 +320,15 @@ class PlotWidget(QSplitter):
             y (list): y values
         """
         # PyQtGraph workaround for NaN from instrument
-        
-        try: # normal method
-            x   = np.array(x)
-            y   = np.array(y)
-            con = np.isfinite(y)
-        except: # method to catch error for X.XXE+YY notation
-            x   = np.array(x)
-            y   = np.array(y, dtype=float)
-            con = np.isfinite(y)
-
+        x = np.array(x)
+        y = np.array(y)
+        con = np.isfinite(y)
         if len(y) >= 2 and y[-2:-1] != np.nan:
             y_ok = y[-2:-1]
             y[~con] = y_ok
         self.lines[sensor].setData(x, y, connect=np.logical_and(con, np.roll(con, -1)))
         if self.unit == "-":
             self.sensor_value_labels[sensor].setText(f"{y[-1]:.3f}")
-        elif self.unit == "mbar": 
-            self.sensor_value_labels[sensor].setText(f"{y[-1]:.3E} {self.unit}") # exeption for vifcon_gase to show the scientific format
         else:
             self.sensor_value_labels[sensor].setText(f"{y[-1]:.3f} {self.unit}")
 
@@ -369,7 +341,7 @@ class PlotWidget(QSplitter):
         """
         if self.unit == "-" or self.unit == "":
             self.sensor_value_labels[sensor].setText(f"{val:.3f}")
-        elif self.unit == "mbar": 
-            self.sensor_value_labels[sensor].setText(f"{val:.3E} {self.unit}") # exeption for vifcon_gase to show the scientific format
+        elif self.unit == "mbar": # exeption for vifcon_gase to show the scientific format
+            self.sensor_value_labels[sensor].setText(val)
         else:
             self.sensor_value_labels[sensor].setText(f"{val:.3f} {self.unit}")

@@ -156,7 +156,6 @@ class Vifcon(QObject):
                     self.sendData(c, trigger)               # erstelle und sende die Daten
             except Exception as e:
                 logger.exception(f'{self.Log_Text_186_str[self.sprache]} - {self.Log_Text_201_str[self.sprache]}')
-            time.sleep(0.1)
     
     def ende(self):
         '''Setzt While-Schleifen Bedingung auf True und beendet so Endlosschleife!'''
