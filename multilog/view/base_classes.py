@@ -157,12 +157,6 @@ class PlotWidget(QSplitter):
 
         self.plot.scene().sigMouseMoved.connect(self.mouseMovedEvent) # Update data if cursor is moved
 
-
-        self.lbl_cursorPos = QLabel(f"Cursor Value: ")
-        self.lbl_cursorPos.setFont(QFont("Times", 14))
-        self.lbl_cursorPos.setAlignment(Qt.AlignLeft)
-        self.graphics_layout.addWidget(self.lbl_cursorPos)
-
         # setup controls for figure scaling
         self.group_box_plot = QGroupBox("Plot configuration")
         # self.group_box_plot.setObjectName('Group')
@@ -298,15 +292,31 @@ class PlotWidget(QSplitter):
 
             self.sensor_value_labels.update({sensors[i]: lbl_value})
 
+        # Init data at Cursor Tip
+        self.lbl_cursorPos = pg.TextItem("")
+        self.lbl_cursorPos.setFont(QFont("Times", 12))
+        self.plot.addItem(self.lbl_cursorPos, ignoreBounds=True)
+        self.lbl_cursorPos.setPos(0,0)
+
+    # change Data at Cursor Tip
     def mouseMovedEvent(self, pos):
         """updates x and y value of cursor."""
         if self.plot.sceneBoundingRect().contains(pos):
             mousePoint = self.plot.getViewBox().mapSceneToView(pos)
-            x_i = round(mousePoint.x())
+            plotArea   = self.plot.getViewBox().viewRange()
+
+            x_i = int(mousePoint.x())
             y_i = round(mousePoint.y(),3)
 
-            if self.unit != "-": self.lbl_cursorPos.setText(f"Cursor Value: {x_i} s, {y_i} {self.unit}")
-            else:                self.lbl_cursorPos.setText(f"Cursor Value: {x_i} s, {y_i}")
+            # calculate constand offset to nullify influence off zooming
+            factor = 50 # how close is should the text be to the cursor
+            xOffset = (plotArea[0][0] - plotArea[0][1])/factor
+            yOffset = (plotArea[1][0] - plotArea[1][1])/factor
+
+            self.lbl_cursorPos.setPos(mousePoint.x() - xOffset,mousePoint.y() - yOffset)
+
+            if self.unit != "-": self.lbl_cursorPos.setText(f"{x_i} s, {y_i} {self.unit}")
+            else:                self.lbl_cursorPos.setText(f"{x_i} s, {y_i}")
 
     def update_autoscale_x(self):
         if self.cb_autoscale_x.isChecked():
