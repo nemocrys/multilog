@@ -3,7 +3,7 @@ settings:
   dt-camera: 250  # [ms] sampling time step for cameras. Will be used only after clicking "Start", all images get saved. min: 150 ms (can be lower with direct network card workflow)
   dt-camera-update: 250  # [ms] frame update time step in camera-view. Will also be used before clicking "Start", no images get saved. min: 150 ms (can be lower with direct network card workflow)
   dt-init: 1000  # [ms] sampling time step for devices, other then cameras; Will be used only after clicking "Start"
-  Multilog_Link: 0 # Multilog-Verbindung: True - On, False - Off
+  Vifcon_Link: 0 # Vifcon-Verbindung: True - On, False - Off
   IP-Vifcon: "localhost"
 
 logging:
