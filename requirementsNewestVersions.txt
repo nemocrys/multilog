@@ -1,0 +1,15 @@
+matplotlib
+numpy
+PyQT5
+pyqtgraph
+pyserial
+PyYAML
+minimalmodbus
+pyusb
+python-usbtmc
+typing_extensions
+pypylon
+imageio
+python-dotenv
+requests
+discord.py
