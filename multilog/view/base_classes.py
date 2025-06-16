@@ -329,6 +329,8 @@ class PlotWidget(QSplitter):
         self.lines[sensor].setData(x, y, connect=np.logical_and(con, np.roll(con, -1)))
         if self.unit == "-":
             self.sensor_value_labels[sensor].setText(f"{y[-1]:.3f}")
+        elif self.unit == "mbar": 
+            self.sensor_value_labels[sensor].setText(f"{y[-1]:.3E} {self.unit}") # exeption for vifcon_gase to show the scientific format
         else:
             self.sensor_value_labels[sensor].setText(f"{y[-1]:.3f} {self.unit}")
 
@@ -343,5 +345,7 @@ class PlotWidget(QSplitter):
             self.sensor_value_labels[sensor].setText(f"{val:.3f}")
         elif self.unit == "mbar": # exeption for vifcon_gase to show the scientific format
             self.sensor_value_labels[sensor].setText(val)
+        elif self.unit == "mbar": 
+            self.sensor_value_labels[sensor].setText(f"{val:.3E} {self.unit}") # exeption for vifcon_gase to show the scientific format
         else:
             self.sensor_value_labels[sensor].setText(f"{val:.3f} {self.unit}")
