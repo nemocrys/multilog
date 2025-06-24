@@ -395,15 +395,19 @@ class Controller(QObject):
         with open("./multilog/nomad/archive_template_main.yml") as f:
             nomad_dict = yaml.safe_load(f)
         data = nomad_dict.pop("data")
-        try:
-            multilog_version = (
-                subprocess.check_output(
-                    ["git", "describe", "--tags", "--dirty", "--always"]
+        if os.path.isdir(os.path.join(self.directory, ".git")):
+            try:
+                multilog_version = (
+                    subprocess.check_output(
+                        ["git", "describe", "--tags", "--dirty", "--always"]
+                    )
+                    .strip()
+                    .decode("utf-8")
                 )
-                .strip()
-                .decode("utf-8")
-            )
-        except FileNotFoundError:
+            except FileNotFoundError:
+                logger.warning("Unable to determine multilog version.", exc_info=True)
+                multilog_version = "unknown"
+        else:
             logger.warning("Unable to determine multilog version.", exc_info=True)
             multilog_version = "unknown"
         data["timestamp"] = datetime.datetime.now(datetime.timezone.utc).astimezone().isoformat(timespec='milliseconds').replace('T', ' ')
@@ -442,15 +446,19 @@ class Controller(QObject):
         """Write a csv file with information about multilog version,
         python version and operating system.
         """
-        try:
-            multilog_version = (
-                subprocess.check_output(
-                    ["git", "describe", "--tags", "--dirty", "--always"]
+        if os.path.isdir(os.path.join(self.directory, ".git")):
+            try:
+                multilog_version = (
+                    subprocess.check_output(
+                        ["git", "describe", "--tags", "--dirty", "--always"]
+                    )
+                    .strip()
+                    .decode("utf-8")
                 )
-                .strip()
-                .decode("utf-8")
-            )
-        except FileNotFoundError:
+            except FileNotFoundError:
+                logger.warning("Unable to determine multilog version.", exc_info=True)
+                multilog_version = "unknown"
+        else:
             logger.warning("Unable to determine multilog version.", exc_info=True)
             multilog_version = "unknown"
         metadata = f"multilog version,python version,system information,\n"
