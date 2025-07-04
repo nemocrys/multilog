@@ -346,10 +346,13 @@ class Controller(QObject):
 
     def exit(self):
         """This is executed when the exit button is clicked."""
+
         if self.VifconNutzung:
             self.LinkVifconThread.quit()
             if not self.VifconLink.done:
                 self.VifconLink.ende()
+                
+        self.saveScreenshot()
         
         logger.info("Stopping sampling")
         self.timer_update_camera.stop()
@@ -392,15 +395,19 @@ class Controller(QObject):
         with open("./multilog/nomad/archive_template_main.yml") as f:
             nomad_dict = yaml.safe_load(f)
         data = nomad_dict.pop("data")
-        try:
-            multilog_version = (
-                subprocess.check_output(
-                    ["git", "describe", "--tags", "--dirty", "--always"]
+        if os.path.isdir(os.path.join(self.directory, ".git")):
+            try:
+                multilog_version = (
+                    subprocess.check_output(
+                        ["git", "describe", "--tags", "--dirty", "--always"]
+                    )
+                    .strip()
+                    .decode("utf-8")
                 )
-                .strip()
-                .decode("utf-8")
-            )
-        except FileNotFoundError:
+            except FileNotFoundError:
+                logger.warning("Unable to determine multilog version.", exc_info=True)
+                multilog_version = "unknown"
+        else:
             logger.warning("Unable to determine multilog version.", exc_info=True)
             multilog_version = "unknown"
         data["timestamp"] = datetime.datetime.now(datetime.timezone.utc).astimezone().isoformat(timespec='milliseconds').replace('T', ' ')
@@ -439,15 +446,19 @@ class Controller(QObject):
         """Write a csv file with information about multilog version,
         python version and operating system.
         """
-        try:
-            multilog_version = (
-                subprocess.check_output(
-                    ["git", "describe", "--tags", "--dirty", "--always"]
+        if os.path.isdir(os.path.join(self.directory, ".git")):
+            try:
+                multilog_version = (
+                    subprocess.check_output(
+                        ["git", "describe", "--tags", "--dirty", "--always"]
+                    )
+                    .strip()
+                    .decode("utf-8")
                 )
-                .strip()
-                .decode("utf-8")
-            )
-        except FileNotFoundError:
+            except FileNotFoundError:
+                logger.warning("Unable to determine multilog version.", exc_info=True)
+                multilog_version = "unknown"
+        else:
             logger.warning("Unable to determine multilog version.", exc_info=True)
             multilog_version = "unknown"
         metadata = f"multilog version,python version,system information,\n"
@@ -503,6 +514,31 @@ class Controller(QObject):
         time_rel = round((time_abs - self.start_time).total_seconds(), 3)
         self.signal_sample_camera.emit({"time_abs": time_abs, "time_rel": time_rel})
 
+    def saveScreenshot(self):
+        if self.sampling_started == True: # only taking screenshots if sampling has started
+            errors = 0
+            for tab in self.tabs:                                      # iterate over all device tabs
+                if "tab_widget" in dir(self.tabs[tab]):                # check if sub tabs exist
+                    for i in range(self.tabs[tab].tab_widget.count()): # iterate over all tabs of the current device
+                        try:
+                            self.main_window.setCentralWidget(self.tabs[tab].tab_widget.setCurrentIndex(i)) # this line brings the selected tab to the foreground
+                            screenshot = self.tabs[tab].grab()                    # taking screenshot
+                            screenshot.save(f'{self.directory}/screenshot-{tab}-{i}.png', 'png') # saving screenshot
+                        except Exception as e:
+                            errors = errors + 1
+                            logger.error(f"Screenshot of tab {tab}-{i}, can not be saved: {e}")
+                else:
+                    try:
+                        self.main_window.setCentralWidget(self.tabs[tab]) # this line brings the selected tab to the foreground
+                        screenshot = self.tabs[tab].grab()                # taking screenshot
+                        screenshot.save(f'{self.directory}/screenshot-{tab}.png', 'png') # saving screenshot
+                    except Exception as e:
+                        errors = errors + 1
+                        logger.error(f"Screenshot of tab {tab}, can not be saved: {e}")
+            if errors == 0: logger.debug("All screenshots saved.")
+            else:           logger.error(f"{errors} screenshots were not saved.")
+        else:
+            logger.debug("No screenshots were saved, sampling was not started.")
 
 def main(config, output_dir):
     """Execute this function to run multilog.
