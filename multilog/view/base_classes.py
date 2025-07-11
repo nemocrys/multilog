@@ -148,6 +148,12 @@ class PlotWidget(QSplitter):
         for i in range(len(sensors)):
             line = self.plot.plot([], [], pen=self.pens[i])
             self.lines.update({sensors[i]: line})
+        
+        # Enable / Disable "standard" line
+        self.enableLine = {}
+        for i in range(len(sensors)):
+            self.enableLine.update({sensors[i]: True})
+
 
         self.padding = 0.0
         self.x_min = 0
@@ -248,7 +254,7 @@ class PlotWidget(QSplitter):
         # Enable / Disable moving average
         self.enableMas = {}
         for i in range(len(sensors)):
-            self.enableMas.update({sensors[i]: True})
+            self.enableMas.update({sensors[i]: False})
 
         # Window Size
         self.windowSize = {}
@@ -257,12 +263,21 @@ class PlotWidget(QSplitter):
         
         self.edit_mavg_dict = {}
         for i in range(len(sensors)):
+            self.cb_line = QCheckBox(f"{sensors[i]}:")
+            self.cb_line.setChecked(True)
+            self.cb_line.setFont(QFont("Times", 12, QFont.Bold))
+            self.cb_line.setStyleSheet(f"color: {COLORS[i]}")
+            self.cb_line.setEnabled(True)
+            self.cb_line.clicked.connect(lambda state, x=sensors[i]: self.update_line(x, state))
+            self.group_box_sensors_layout.addWidget(self.cb_line, i, 0, 1, 1)
+            """
             lbl_name = QLabel()
             lbl_name.setText(f"{sensors[i]}:")
             lbl_name.setFont(QFont("Times", 12, QFont.Bold))
             lbl_name.setStyleSheet(f"color: {COLORS[i]}")
-            self.group_box_sensors_layout.addWidget(lbl_name, i, 0, 1, 1)
-            self.sensor_name_labels.update({sensors[i]: lbl_name})
+            self.group_box_sensors_layout.addWidget(lbl_name, i, 1, 1, 1)
+            """
+            #self.sensor_name_labels.update({sensors[i]: lbl_name})
             lbl_value = QLabel()
             if self.unit == "-":
                 lbl_value.setText(f"XXX.XXX")
@@ -272,8 +287,8 @@ class PlotWidget(QSplitter):
             lbl_value.setStyleSheet(f"color: {COLORS[i]}")
             self.group_box_sensors_layout.addWidget(lbl_value, i, 1, 1, 1)
 
-            self.cb_mavg = QCheckBox("Moving avg. window size [points]: ")
-            self.cb_mavg.setChecked(True)
+            self.cb_mavg = QCheckBox("Avr. window [points]: ")
+            self.cb_mavg.setChecked(False)
             self.cb_mavg.setFont(QFont("Times", 12, QFont.Bold))
             self.cb_mavg.setStyleSheet(f"color: {COLORS[i]}")
             self.cb_mavg.setEnabled(True)
@@ -368,6 +383,12 @@ class PlotWidget(QSplitter):
         self.edit_y_max.clearFocus()
         self.plot.setYRange(self.y_min, self.y_max, padding=self.padding)
 
+    def update_line(self, index, state):
+        if state == 1:
+            self.enableLine[index] = True
+        else:
+            self.enableLine[index] = False
+
     def update_mavg(self, index, state):
         if state == 1:
             self.enableMas[index] = True
@@ -422,7 +443,8 @@ class PlotWidget(QSplitter):
             y_ok = y[-2:-1]
             y[~con] = y_ok
 
-        self.lines[sensor].setData(x, y, connect=np.logical_and(con, np.roll(con, -1)))
+        if self.enableLine[sensor] == True: self.lines[sensor].setData(x, y, connect=np.logical_and(con, np.roll(con, -1)))
+        else: self.lines[sensor].clear()
 
         # plot moving average
         if self.windowSize[sensor] <= len(y):
