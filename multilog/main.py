@@ -54,7 +54,7 @@ class Sampler(QObject, metaclass=SignalMetaclass):
                 logger.debug(f"Sampler: updating {device}")
                 if device in self.cameras:
                     time_abs = datetime.datetime.now(datetime.timezone.utc).astimezone()
-                    time_rel = round((time_abs - self.start_time).total_seconds(), 3)
+                    time_rel = round((time_abs - self.start_time).total_seconds(), 6)
                     sampling.update({device: self.devices[device].sample()})
                 else:
                     sampling.update({device: self.devices[device].sample()})
@@ -509,7 +509,7 @@ class Controller(QObject):
         respective threads)."""
         logger.info("sample main")
         time_abs = datetime.datetime.now(datetime.timezone.utc).astimezone()
-        time_rel = round((time_abs - self.start_time).total_seconds(), 3)
+        time_rel = round((time_abs - self.start_time).total_seconds(), 6)
         self.abs_time.append(time_abs)
         self.rel_time.append(time_rel)
         self.main_window.set_current_time(f"{time_abs:%H:%M:%S}")
@@ -525,7 +525,7 @@ class Controller(QObject):
         respective threads)."""
         logger.info("sample camera")
         time_abs = datetime.datetime.now(datetime.timezone.utc).astimezone()
-        time_rel = round((time_abs - self.start_time).total_seconds(), 3)
+        time_rel = round((time_abs - self.start_time).total_seconds(), 6)
         self.signal_sample_camera.emit({"time_abs": time_abs, "time_rel": time_rel})
 
     def saveScreenshot(self):

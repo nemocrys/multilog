@@ -99,20 +99,23 @@ class BaslerCamera:
         timeLastPhotoFloat = (time_abs - self.timeLastPhoto).total_seconds()
 
         if timeLastPhotoFloat >= self.frame_rate_multilog/1000:
+
             if self.debugMode == False:
                 if self.parameterChange == False:
+                    logger.debug(f"Camera {self.name} taking Photo at {self.timeLastPhoto}")
+                    self.timeLastPhoto = self.round_time(datetime.datetime.now(datetime.timezone.utc).astimezone())
+
                     grab = self._device.RetrieveResult(self._timeout, pylon.TimeoutHandling_Return)
                     if grab.GrabSucceeded(): image = self._converter.Convert(grab).GetArray()
                     else: raise RuntimeError("Image grabbing failed.")
                     grab.Release()
-                    self.timeLastPhoto = datetime.datetime.now(datetime.timezone.utc).astimezone()
-                    logger.debug(f"Camera {self.name} took Photo at {self.timeLastPhoto}")
                     return image
+
             else: #if debugmode is true
+                logger.debug(f"Camera {self.name} taking Photo at {self.timeLastPhoto}")
+                self.timeLastPhoto = self.round_time(datetime.datetime.now(datetime.timezone.utc).astimezone())
                 m = np.ones((4000, 3000))
                 n3 = np.arange(3000)
-                self.timeLastPhoto = datetime.datetime.now(datetime.timezone.utc).astimezone()
-                logger.debug(f"Camera {self.name} took Photo at {self.timeLastPhoto}")
                 return m*n3
         else: logger.debug(f"Camera {self.name} will take photo in {round(self.frame_rate_multilog/1000-timeLastPhotoFloat,6)} s")
 
@@ -257,6 +260,17 @@ class BaslerCamera:
     
     def getEnableDataStorage(self):
         return self.enableDataStorage
+
+    def round_time(self, dt):
+        s = dt.strftime('%Y-%m-%d %H:%M:%S.%f%z')
+        head = s.split(".")[0]
+        tail = "." + s.split(".")[1].split("+")[0]
+        tz = s[-5:]
+        f = float(tail)
+        temp = "{:.01f}".format(f) 
+        new_tail = temp[1:] # temp[0] is always '0'; get rid of it
+        print(head + new_tail)
+        return datetime.datetime.strptime(head + new_tail + tz, '%Y-%m-%d %H:%M:%S.%f%z')
 
     def __del__(self):
         """Stopp sampling, reset device."""
