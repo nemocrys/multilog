@@ -514,11 +514,52 @@ class Controller(QObject):
         time_rel = round((time_abs - self.start_time).total_seconds(), 3)
         self.signal_sample_camera.emit({"time_abs": time_abs, "time_rel": time_rel})
 
+    def resetZoom(self, plotName):
+        try: plotName.plot.autoRange()
+        except: logging.error(f"Resetting the zoom of {plotName} was not possible.")
+
     def saveScreenshot(self):
         if self.sampling_started == True: # only taking screenshots if sampling has started
             errors = 0
+            
             for tab in self.tabs:                                      # iterate over all device tabs
                 if "tab_widget" in dir(self.tabs[tab]):                # check if sub tabs exist
+                    
+                    if "DAQ-6510" in tab:
+                        try:
+                            for plot_widget in self.tabs[tab].plot_widgets:
+                                self.tabs[tab].plot_widgets[plot_widget].plot.autoRange()
+                        except: logging.error(f"Resetting the zoom of {tab} was not possible.")
+
+                    if "Eurotherm" in tab:
+                        self.resetZoom(self.tabs[tab].temperature_widget)
+                        self.resetZoom(self.tabs[tab].op_widget)
+
+                    if "IFM-flowmeter" in tab:
+                        self.resetZoom(self.tabs[tab].flow_widget)
+                        self.resetZoom(self.tabs[tab].temperature_widget)
+
+                    if "Keysight" in tab:
+                        self.resetZoom(self.tabs[tab].voltage_widget)
+                        self.resetZoom(self.tabs[tab].frequency_widget)
+
+                    if "Vifcon_achsen" in tab:
+                        self.resetZoom(self.tabs[tab].distance_widget)
+                        self.resetZoom(self.tabs[tab].velocity_widget)
+
+                    if "Vifcon_gase" in tab:
+                        self.resetZoom(self.tabs[tab].flow_widget)
+                        self.resetZoom(self.tabs[tab].pressure_widget)
+                        self.resetZoom(self.tabs[tab].freq_widget)
+
+                    if "Vifcon_generator" in tab:
+                        self.resetZoom(self.tabs[tab].percantage_widget)
+                        self.resetZoom(self.tabs[tab].freq_widget)
+
+                    ### ### ### ### ### ### ### 
+                    ## Add new device here!  ##
+                    ### ### ### ### ### ### ###
+
                     for i in range(self.tabs[tab].tab_widget.count()): # iterate over all tabs of the current device
                         try:
                             self.main_window.setCentralWidget(self.tabs[tab].tab_widget.setCurrentIndex(i)) # this line brings the selected tab to the foreground
@@ -527,8 +568,9 @@ class Controller(QObject):
                         except Exception as e:
                             errors = errors + 1
                             logger.error(f"Screenshot of tab {tab}-{i}, can not be saved: {e}")
-                else:
+                else: # if no sub tabs exist
                     try:
+                        if tab != "Process-Condition-Logger": self.resetZoom(self.tabs[tab]) # "Process-Condition-Logger" has no plot, and can therefore not reset the zoom
                         self.main_window.setCentralWidget(self.tabs[tab]) # this line brings the selected tab to the foreground
                         screenshot = self.tabs[tab].grab()                # taking screenshot
                         screenshot.save(f'{self.directory}/screenshot-{tab}.png', 'png') # saving screenshot
