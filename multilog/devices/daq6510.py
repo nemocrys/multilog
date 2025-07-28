@@ -412,8 +412,10 @@ class Daq6510:
             measurement_value = (
                 float(data[2 * i + 1]) * self.conversion_factor[sensor_name]
             )
-            sampling.update({sensor_name: measurement_value})
-            
+            if measurement_value < 10e5: sampling.update({sensor_name: measurement_value})
+            else: 
+                logging.error(f"Sampling of Daq6510 '{self.name}' failed. Measurement_value optianed but not realistic: {measurement_value}")
+                sampling.update({sensor_name: np.nan()})
         self.setLatestSample(sampling)
         return sampling
 
