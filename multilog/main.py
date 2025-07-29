@@ -35,7 +35,7 @@ class SignalMetaclass(type(QObject)):
 class Sampler(QObject, metaclass=SignalMetaclass):
     """This class is used to sample the devices from separate threads."""
 
-    def __init__(self, devices, cameras, start_time):
+    def __init__(self, devices):
         """Create sampler object
 
         Args:
@@ -43,8 +43,6 @@ class Sampler(QObject, metaclass=SignalMetaclass):
         """
         super().__init__()
         self.devices = devices
-        self.cameras = cameras
-        self.start_time = datetime.datetime.now(datetime.timezone.utc).astimezone()
 
     def update(self):
         """Sampling during initialization. Data is not saved."""
@@ -52,12 +50,7 @@ class Sampler(QObject, metaclass=SignalMetaclass):
         for device in self.devices:
             try:
                 logger.debug(f"Sampler: updating {device}")
-                if device in self.cameras:
-                    time_abs = datetime.datetime.now(datetime.timezone.utc).astimezone()
-                    time_rel = round((time_abs - self.start_time).total_seconds(), 6)
-                    sampling.update({device: self.devices[device].sample()})
-                else:
-                    sampling.update({device: self.devices[device].sample()})
+                sampling.update({device: self.devices[device].sample()})
                 logger.debug(f"Sampler: updated {device}")
             except Exception as e:
                 logger.exception(f"Error in sampling of {device}")
@@ -78,10 +71,7 @@ class Sampler(QObject, metaclass=SignalMetaclass):
                     f"Sampler: sampling {device}, timestep {time_abs.isoformat(timespec='milliseconds')} - {time_rel}"
                 )
                 sampling = self.devices[device].sample()
-                if device in self.cameras:
-                    self.devices[device].save_measurement(time_abs, time_rel, sampling)
-                else:
-                    self.devices[device].save_measurement(time_abs, time_rel, sampling)
+                self.devices[device].save_measurement(time_abs, time_rel, sampling)
                 meas_data.update({device: self.devices[device].meas_data})
                 logger.debug(f"Sampler: sampled {device}")
             except Exception as e:
@@ -93,11 +83,11 @@ class Controller(QObject):
     """Main class controlling multilog's sampling and data visualization."""
 
     # signals to communicate with threads
-    signal_update_main   = pyqtSignal()     # sample and update view
-    signal_sample_main   = pyqtSignal(dict) # sample, update view and save
-    signal_update_camera = pyqtSignal()     # sample and update camera
-    signal_sample_camera = pyqtSignal(dict) # sample, update camera and save
-    signal_Vifcon        = pyqtSignal() 
+    signal_update_main = pyqtSignal()  # sample and update view
+    signal_sample_main = pyqtSignal(dict)  # sample, update view and save
+    signal_update_camera = pyqtSignal()  # sample and update view
+    signal_sample_camera = pyqtSignal(dict)  # sample, update view and save
+    signal_Vifcon     = pyqtSignal() 
 
     def __init__(self, config, output_dir) -> None:
         """Initialize and run multilog.
@@ -118,36 +108,36 @@ class Controller(QObject):
         self.output_dir = output_dir
 
         # do that after logging has been configured to log possible errors
-        from .devices.daq6510                   import Daq6510
-        from .devices.basler_camera             import BaslerCamera
-        from .devices.ifm_flowmeter             import IfmFlowmeter
-        from .devices.eurotherm                 import Eurotherm
-        from .devices.optris_ip640              import OptrisIP640
-        from .devices.process_condition_logger  import ProcessConditionLogger
+        from .devices.daq6510 import Daq6510
+        from .devices.basler_camera import BaslerCamera
+        from .devices.ifm_flowmeter import IfmFlowmeter
+        from .devices.eurotherm import Eurotherm
+        from .devices.optris_ip640 import OptrisIP640
+        from .devices.process_condition_logger import ProcessConditionLogger
         from .devices.pyrometer_array_lumasense import PyrometerArrayLumasense
-        from .devices.pyrometer_lumasense       import PyrometerLumasense
-        from .devices.pyrometer_dias            import PyrometerDias
-        from .devices.vifcon_achsen             import Vifcon_achsen
-        from .devices.vifcon_gase               import Vifcon_gase
-        from .devices.vifcon_generator          import Vifcon_generator
-        from .devices.keysight                  import Keysight
+        from .devices.pyrometer_lumasense import PyrometerLumasense
+        from .devices.pyrometer_dias import PyrometerDias
+        from .devices.vifcon_achsen import Vifcon_achsen
+        from .devices.vifcon_gase import Vifcon_gase
+        from .devices.vifcon_generator import Vifcon_generator
+        from .devices.keysight import Keysight
 
         from .devices.vifcon import Vifcon
 
-        from .view.main_window               import MainWindow
-        from .view.daq6510                   import Daq6510Widget
-        from .view.basler_camera             import BaslerCameraWidget
-        from .view.ifm_flowmeter             import IfmFlowmeterWidget
-        from .view.eurotherm                 import EurothermWidget
-        from .view.optris_ip640              import OptrisIP640Widget
-        from .view.process_condition_logger  import ProcessConditionLoggerWidget
+        from .view.main_window import MainWindow
+        from .view.daq6510 import Daq6510Widget
+        from .view.basler_camera import BaslerCameraWidget
+        from .view.ifm_flowmeter import IfmFlowmeterWidget
+        from .view.eurotherm import EurothermWidget
+        from .view.optris_ip640 import OptrisIP640Widget
+        from .view.process_condition_logger import ProcessConditionLoggerWidget
         from .view.pyrometer_array_lumasense import PyrometerArrayLumasenseWidget
-        from .view.pyrometer_lumasense       import PyrometerLumasenseWidget
-        from .view.pyrometer_dias            import PyrometerDiasWidget
-        from .view.vifcon_achsen             import Vifcon_achsenWidget
-        from .view.vifcon_gase               import Vifcon_gaseWidget
-        from .view.vifcon_generator          import Vifcon_generatorWidget
-        from .view.keysight                  import KeysightWidget
+        from .view.pyrometer_lumasense import PyrometerLumasenseWidget
+        from .view.pyrometer_dias import PyrometerDiasWidget
+        from .view.vifcon_achsen import Vifcon_achsenWidget
+        from .view.vifcon_gase import Vifcon_gaseWidget
+        from .view.vifcon_generator import Vifcon_generatorWidget
+        from .view.keysight import KeysightWidget
 
         self.sampling_started = False  # this will to be true once "start" was clicked
 
@@ -156,20 +146,19 @@ class Controller(QObject):
         self.timer_measurement_main = QTimer()
         self.timer_measurement_main.setInterval(self.config["settings"]["dt-main"])
         self.timer_measurement_main.timeout.connect(self.sample_main)
-
         # camera sampling loop
         self.timer_measurement_camera = QTimer()
         self.timer_measurement_camera.setInterval(self.config["settings"]["dt-camera"])
         self.timer_measurement_camera.timeout.connect(self.sample_camera)
-
         # main sampling loop after startup (without saving data)
         self.timer_update_main = QTimer()
         self.timer_update_main.setInterval(self.config["settings"]["dt-init"])
         self.timer_update_main.timeout.connect(self.update_main)
-
         # camera frame update loop
         self.timer_update_camera = QTimer()
-        self.timer_update_camera.setInterval(self.config["settings"]["dt-camera-update"])
+        self.timer_update_camera.setInterval(
+            self.config["settings"]["dt-camera-update"]
+        )
         self.timer_update_camera.timeout.connect(self.update_camera)
 
         # time information is stored globally
@@ -280,17 +269,15 @@ class Controller(QObject):
         for device in self.devices:
             thread = QThread()
             logger.debug(f"{device} in thread {thread}")
-            sampler = Sampler({device: self.devices[device]}, self.cameras, self.start_time)
+            sampler = Sampler({device: self.devices[device]})
             sampler.moveToThread(thread)
             sampler.signal.connect(self.update_view)
-
             if device in self.cameras:
                 self.signal_update_camera.connect(sampler.update)
                 self.signal_sample_camera.connect(sampler.sample)
             else:
                 self.signal_update_main.connect(sampler.update)
                 self.signal_sample_main.connect(sampler.sample)
-
             self.samplers.append(sampler)
             self.threads.append(thread)
 
@@ -489,7 +476,6 @@ class Controller(QObject):
         logger.info("update main")
         self.main_window.set_current_time(datetime.datetime.now().strftime("%H:%M:%S"))
         self.signal_update_main.emit()
-
         if "IFM-flowmeter" in self.devices:
             flowmeter = self.devices["IFM-flowmeter"]
             flowmeter.check_leakage()
@@ -509,7 +495,7 @@ class Controller(QObject):
         respective threads)."""
         logger.info("sample main")
         time_abs = datetime.datetime.now(datetime.timezone.utc).astimezone()
-        time_rel = round((time_abs - self.start_time).total_seconds(), 6)
+        time_rel = round((time_abs - self.start_time).total_seconds(), 3)
         self.abs_time.append(time_abs)
         self.rel_time.append(time_rel)
         self.main_window.set_current_time(f"{time_abs:%H:%M:%S}")
@@ -525,7 +511,7 @@ class Controller(QObject):
         respective threads)."""
         logger.info("sample camera")
         time_abs = datetime.datetime.now(datetime.timezone.utc).astimezone()
-        time_rel = round((time_abs - self.start_time).total_seconds(), 6)
+        time_rel = round((time_abs - self.start_time).total_seconds(), 3)
         self.signal_sample_camera.emit({"time_abs": time_abs, "time_rel": time_rel})
 
     def resetZoom(self, plotName):
