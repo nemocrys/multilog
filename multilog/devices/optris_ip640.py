@@ -136,8 +136,8 @@ class OptrisIP640:
         self.directory = f"{directory}/{self.name}"
         os.makedirs(self.directory)
         with open(f"{self.directory}/_images.csv", "w", encoding="utf-8") as f:
-            f.write("# datetime,s,filename,\n")
-            f.write("time_abs,time_rel,img-name,\n")
+            f.write("# datetime,s,filename,filename\n")
+            f.write("time_abs,time_rel,img-name,heat-name\n")
         self.write_nomad_file(directory)
 
     def write_nomad_file(self, directory="./"):
@@ -189,7 +189,7 @@ class OptrisIP640:
         # self.plot_to_file(sampling, f"{self.directory}/{img_name}.png")
         with open(f"{self.directory}/_images.csv", "a", encoding="utf-8") as f:
             f.write(
-                f"{time_abs.isoformat(timespec='milliseconds').replace('T', ' ')},{time_rel},{img_name},\n"
+                f"{time_abs.isoformat(timespec='milliseconds').replace('T', ' ')},{time_rel},{img_name}.png,{img_name}.csv,\n"
             )
         with open(f"{self.base_directory}/{self.name}.archive.yaml", "a") as f:
             f.write(f"  - name: {img_name}\n")
