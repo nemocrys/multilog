@@ -96,7 +96,7 @@ devices:
       nplc: 1  # nplc of all DC measurements, reduce this for higher sampling rates!
       lsync: True  # line sync for all channels
       ocom: True  # offset compensation for all channels
-      azer: False  # automatic zeroing for all channels
+      azer: False  # automatic zeroing for all channels (True: ON, False: OFF, Once: ONCE)
       adel: True  # automatic delay for all channels
       internal-cold-junction: False  # if False: use 0.0°C
     channels:

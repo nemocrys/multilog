@@ -124,6 +124,8 @@ class Daq6510:
             ocom = "OFF"
         if config["settings"]["azer"]:
             azer = "ON"
+        elif config["settings"]["azer"]=="Once":
+            azer = "ONCE"
         else:
             azer = "OFF"
         if config["settings"]["adel"]:
@@ -151,7 +153,10 @@ class Daq6510:
             cmds.append(f"TEMP:AVER OFF, {self.ch_str_tc}\n")
             cmds.append(f"TEMP:LINE:SYNC {lsync}, {self.ch_str_tc}\n")
             cmds.append(f"TEMP:OCOM {ocom}, {self.ch_str_tc}\n")
-            cmds.append(f"TEMP:AZER {azer}, {self.ch_str_tc}\n")
+            if azer=="ONCE":
+                cmds.append(f"AZER:ONCE\n")            
+            else:
+                cmds.append(f"TEMP:AZER {azer}, {self.ch_str_tc}\n")
             cmds.append(f"TEMP:DEL:AUTO {adel}, {self.ch_str_tc}\n")
             for channel in self.ch_list_tc:
                 cmds.append(f'TEMP:NPLC {config["settings"]["nplc"]}, (@{channel})\n')
@@ -161,7 +166,10 @@ class Daq6510:
             cmds.append(f"TEMP:RTD:FOUR PT100, {self.ch_str_pt_100}\n")
             cmds.append(f"TEMP:LINE:SYNC {lsync}, {self.ch_str_pt_100}\n")
             cmds.append(f"TEMP:OCOM {ocom}, {self.ch_str_pt_100}\n")
-            cmds.append(f"TEMP:AZER {azer}, {self.ch_str_pt_100}\n")
+            if azer=="ONCE":
+                cmds.append(f"AZER:ONCE\n")            
+            else:
+                cmds.append(f"TEMP:AZER {azer}, {self.ch_str_pt_100}\n")            
             cmds.append(f"TEMP:DEL:AUTO {adel}, {self.ch_str_pt_100}\n")
             cmds.append(f"TEMP:AVER OFF, {self.ch_str_pt_100}\n")
             for channel in self.ch_list_pt100:
@@ -176,7 +184,10 @@ class Daq6510:
             cmds.append(f"TEMP:RTD:ZERO 1000, {self.ch_str_pt_1000}\n")
             cmds.append(f"TEMP:LINE:SYNC {lsync}, {self.ch_str_pt_1000}\n")
             cmds.append(f"TEMP:OCOM {ocom}, {self.ch_str_pt_1000}\n")
-            cmds.append(f"TEMP:AZER {azer}, {self.ch_str_pt_1000}\n")
+            if azer=="ONCE":
+                cmds.append(f"AZER:ONCE\n")            
+            else:
+                cmds.append(f"TEMP:AZER {azer}, {self.ch_str_pt_1000}\n")
             cmds.append(f"TEMP:DEL:AUTO {adel}, {self.ch_str_pt_1000}\n")
             cmds.append(f"TEMP:AVER OFF, {self.ch_str_pt_1000}\n")
             for channel in self.ch_list_pt1000:
@@ -184,7 +195,11 @@ class Daq6510:
         if self.nb_dcv > 0:
             cmds.append(f'FUNC "VOLT:DC", {self.ch_str_dcv}\n')
             cmds.append(f"VOLT:LINE:SYNC {lsync}, {self.ch_str_dcv}\n")
-            cmds.append(f"VOLT:AZER {azer}, {self.ch_str_dcv}\n")
+            # cmds.append(f"VOLT:AZER OFF, {self.ch_str_dcv}\n")
+            if azer=="ONCE":
+                cmds.append(f"AZER:ONCE\n")            
+            else:
+                cmds.append(f"VOLT:AZER {azer}, {self.ch_str_dcv}\n")
             cmds.append(f"VOLT:DEL:AUTO {adel}, {self.ch_str_dcv}\n")
             cmds.append(f"VOLT:AVER OFF, {self.ch_str_dcv}\n")
             for channel in self.ch_list_dcv:
